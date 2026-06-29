@@ -7,10 +7,6 @@
 /localhost-key.pem
 /localhost.pem
 
-#Ignore All Files In Orders And Sessions Because They Are Secrets
-/orders/*
-/sessions/*
-
 #Ignore node_modules Because They Will Get Rebuilt And Uses Lots Of Space
 /node_modules
 
