@@ -496,7 +496,11 @@ app.get('/pages/orders', redirectToLoginIfNotAuthenticated, (req, res) => {
 });
 
 app.get('pages/orders/:id/view', redirectToLoginIfNotAuthenticated, (req, res) => {
-    res.sendFile
+    res.sendFile(getPageDirectory('view-order'));
+})
+
+app.get('/pages/orders/:id/edit', redirectToLoginIfNotAuthenticated, (req, res) => {
+    res.sendFile(getPageDirectory('edit-order'));
 })
 
 app.use(express.static('public', {
