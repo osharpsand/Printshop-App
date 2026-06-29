@@ -513,8 +513,8 @@ if (production) {
     });
 } else {
     const sslOptions = {
-        key: fs.readFileSync(path.join(__dirname, 'localhost-key.pem')),
-        cert: fs.readFileSync(path.join(__dirname, 'localhost.pem')),
+        key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
+        cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
     };
 
     https.createServer(sslOptions, app).listen(port, () => {

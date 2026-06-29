@@ -1,11 +1,14 @@
 #Ignore .vscode Files
 /.vscode
 
+#Ignore Private Folders
+/cert
+/orders
+/sessions
+
 #Ignore Because It Contains Secrets
 /.env
 /credentials.json
-/localhost-key.pem
-/localhost.pem
 
 #Ignore node_modules Because They Will Get Rebuilt And Uses Lots Of Space
 /node_modules
