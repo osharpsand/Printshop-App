@@ -13,7 +13,7 @@ A simple application for myself to submit and manage print orders
 
 1. Clone the repository
 	```bash
-	git clone <repository-url>
+	git clone https://github.com/osharpsand/Printshop-App.git
 	cd "Printshop App"
 	```
 2. Install dependencies
