@@ -1,0 +1,19 @@
+#Ignore .vscode Files
+/.vscode
+
+#Ignore Because It Contains Secrets
+/.env
+/credentials.json
+/localhost-key.pem
+/localhost.pem
+
+#Ignore All Files In Orders And Sessions Because They Are Secrets
+/orders/*
+/sessions/*
+
+#Ignore node_modules Because They Will Get Rebuilt And Uses Lots Of Space
+/node_modules
+
+#Ignore pnpm Files Because They Will Get Rebuilt
+/pnpm-lock.yaml
+/pnpm-workspace.yaml

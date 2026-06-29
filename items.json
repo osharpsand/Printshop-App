@@ -1,0 +1,58 @@
+[
+    {
+        "Name": "Concentric Fidget Star",
+        "Price": 5.00,
+        "DefaultMaterial": "Any PLA",
+        "Materials": [
+            "Any PLA",
+            "PLA Basic",
+            "PLA Matte",
+            "PLA Silk"
+        ]
+    },
+    {
+        "Name": "Extending Sword",
+        "Price": 15.00,
+        "DefaultMaterial": "PLA Silk",
+        "Materials": [
+            "Any PLA",
+            "PLA Basic",
+            "PLA Matte",
+            "PLA Silk"
+        ]
+    },
+    {
+        "Name": "No Soliciting Sign",
+        "Price": 5.00,
+        "DefaultMaterial": "PLA Basic",
+        "Materials": [
+            "Any PLA",
+            "PLA Basic",
+            "PLA Matte",
+            "PLA Silk"
+        ]
+    },
+    {
+        "Name": "Small Fidget Heart",
+        "Price": 0.50,
+        "DefaultMaterial": "Any PLA",
+        "Materials": [
+            "Any PLA",
+            "PLA Basic",
+            "PLA Matte",
+            "PLA Silk"
+        ]
+    },
+    {
+        "Name": "Fishing Rod Holder Hooks",
+        "Price": 2.50,
+        "DefaultMaterial": "PETG-CF",
+        "Materials": [
+            "PLA Basic",
+            "PLA Matte",
+            "PETG",
+            "PETG-CF",
+            "PAHT-CF"
+        ]
+    }
+]
