@@ -139,6 +139,8 @@ if (await promptYesOrNo('Would You Like To Generate A printshop.service File For
     defualtService = defaultService.replaceAll('{{USERNAME}}', os.userInfo().username);
     defaultService = defaultService.replaceAll('{{WORKING_DIRECTORY}}', path.resolve(__dirname));
 
+    fs.writeFileSync(path.join(__dirname, 'printshop-app.service'), defaultService);
+
     execSync(`sudo ln -s ${path.join(__dirname, 'printshop-app.service')} ${'/etc/systemd/system/printshop-app.service'}`, { stdio: 'inherit' });
     execSync('sudo systemctl daemon-reload', { stdio: 'inherit' });
     execSync('sudo systemctl enable printshop-app', { stdio: 'inherit' });
