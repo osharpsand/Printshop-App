@@ -66,7 +66,7 @@ const port = Number(await prompt('What Port Should The Server Run On? (Hit Enter
 production = await promptYesOrNo('Should This Server Have Production Mode On? ');
 let url = '';
 if (production) {
-    url = await prompt('What Is The URL Of The Server? ');
+    url = await prompt('What Is The Domain The Server Will Be Hosted On? ');
 }
 console.log('Generating Random Secret...');
 const secret = crypto.randomBytes(32).toString('hex');
