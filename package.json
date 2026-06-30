@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node server.js",
     "setup": "node setup.js",
-    "postinstall": "node setup.js",
     "change-credentials": "node change-credentials.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

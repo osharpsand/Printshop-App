@@ -1,0 +1,15 @@
+[Unit]
+Description=Printshop App
+After=network.target
+
+[Service]
+Type=simple
+User={{USERNAME}}
+Group={{USERNAME}}
+WorkingDirectory={{WORKING_DIRECTORY}}
+ExecStart={{WORKING_DIRECTORY}}/start.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.taget
