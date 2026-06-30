@@ -4,8 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "setup": "node setup.js",
+    "start": "/bin/sh start.sh",
     "change-credentials": "node change-credentials.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
