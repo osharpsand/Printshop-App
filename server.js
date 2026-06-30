@@ -14,7 +14,7 @@ process.loadEnvFile();
 const port = process.env.PORT || 3000;
 const secret = process.env.SECRET;
 const production = process.env.PRODUCTION == 'true';
-const domain = process.env.URL;
+const domain = production ? domain : ('localhost:' + port);
 
 const app = express();
 
@@ -177,8 +177,6 @@ function getPageDirectory(name) {
 }
 
 function getPageUrl(name) {
-    const domain = production ? domain : ('localhost:' + port);
-
     return `https://${domain}/pages/${name}`;
 }
 
