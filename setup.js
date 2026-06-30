@@ -136,7 +136,7 @@ if (await promptYesOrNo('Would You Like To Generate A start.sh File For Producti
 if (await promptYesOrNo('Would You Like To Generate A printshop.service File For Prodcution And Enable It?', production)) {
     let defaultService = fs.readFileSync(defaultServiceFile, 'utf8');
 
-    defualtService = defaultService.replaceAll('{{USERNAME}}', os.userInfo().username);
+    defaultService = defaultService.replaceAll('{{USERNAME}}', os.userInfo().username);
     defaultService = defaultService.replaceAll('{{WORKING_DIRECTORY}}', path.resolve(__dirname));
 
     fs.writeFileSync(path.join(__dirname, 'printshop-app.service'), defaultService);
