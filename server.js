@@ -14,7 +14,7 @@ process.loadEnvFile();
 const port = process.env.PORT || 3000;
 const secret = process.env.SECRET;
 const production = process.env.PRODUCTION == 'true';
-const domain = production ? domain : ('localhost:' + port);
+const domain = production ? process.env.URL : ('localhost:' + port);
 
 const app = express();
 
