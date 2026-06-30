@@ -128,9 +128,11 @@ if (await promptYesOrNo('Would You Like To Generate A start.sh File For Producti
     fs.copyFileSync(defaultStartFile, path.join(__dirname, 'start.sh'));
     fs.chmodSync(path.join(__dirname, 'start.sh'), 0o755);
 
-    let package = JSON.parse(fs.readFileSync(packageFile));
-    package.scripts.start = '/bin/sh start.sh';
-    fs.writeFileSync(packageFile, JSON.stringify(package, null, 2));
+    if (!production) {
+        let package = JSON.parse(fs.readFileSync(packageFile));
+        package.scripts.start = '/bin/sh start.sh';
+        fs.writeFileSync(packageFile, JSON.stringify(package, null, 2));
+    }
 }
 
 if (await promptYesOrNo('Would You Like To Generate A printshop.service File For Prodcution And Enable It?', production)) {
@@ -146,6 +148,11 @@ if (await promptYesOrNo('Would You Like To Generate A printshop.service File For
     execSync('sudo systemctl enable printshop-app', { stdio: 'inherit' });
 }
 
+if (production) {
+    console.log('Changing git Branch To Production...');
+    execSync('git checkout -b production origin/production');
+}
+
 if (production || await promptYesOrNo('Would You Like To Delete The Setup Helper?')) {
     fs.unlinkSync(path.resolve(__filename));
     fs.rmSync(setupFolder, { recursive: true });
@@ -153,11 +160,6 @@ if (production || await promptYesOrNo('Would You Like To Delete The Setup Helper
     let package = JSON.parse(fs.readFileSync(packageFile));
     delete package.scripts.setup;
     fs.writeFileSync(packageFile, JSON.stringify(package, null, 2));
-}
-
-if (production) {
-    console.log('Changing git Branch To Production...');
-    execSync('git checkout -b production origin/production');
 }
 
 if (!fs.existsSync(ordersFolder)) { fs.mkdirSync(ordersFolder); }
