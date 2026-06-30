@@ -64,10 +64,14 @@ if (!fs.existsSync(setupFolder)) {
 console.log('\n');
 const port = Number(await prompt('What Port Should The Server Run On? (Hit Enter For Default: 3000): ')) || 3000;
 production = await promptYesOrNo('Should This Server Have Production Mode On? ');
+let url = '';
+if (production) {
+    url = await prompt('What Is The URL Of The Server? ');
+}
 console.log('Generating Random Secret...');
 const secret = crypto.randomBytes(32).toString('hex');
 
-const envLines = `PORT=${port}\nPRODUCTION=${production}\nSECRET=${secret}`;
+const envLines = `PORT=${port}\nPRODUCTION=${production}\nSECRET=${secret}\nURL=${url}`;
 
 fs.writeFileSync(envFile, envLines);
 
