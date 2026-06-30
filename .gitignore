@@ -12,7 +12,3 @@
 
 #Ignore node_modules Because They Will Get Rebuilt And Uses Lots Of Space
 /node_modules
-
-#Ignore pnpm Files Because They Will Get Rebuilt
-/pnpm-lock.yaml
-/pnpm-workspace.yaml
