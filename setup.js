@@ -148,7 +148,7 @@ if (await promptYesOrNo('Would You Like To Generate A printshop.service File For
 
 if (production) {
     console.log('Changing git Branch To Production...');
-    execSync('git checkout -b production');
+    execSync('git checkout -b production origin/production');
 }
 
 if (production || await promptYesOrNo('Would You Like To Delete The Setup Helper?')) {
