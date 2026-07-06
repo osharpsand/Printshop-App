@@ -1,0 +1,21 @@
+<div class="form-group">
+    <label for="customItemLink-{{ROW_ID}}">File Link</label>
+    <input type="text" id="customItemLink-{{ROW_ID}}" class="custom-item-link" placeholder="https://example.com">
+</div>
+<div class="form-group">
+    <label for="customItemMaterial-{{ROW_ID}}">Material</label>
+    <select id="customItemMaterial-{{ROW_ID}}" class="custom-item-material enhanced-select" onchange="updateCustomItemOptions(/*{{ROW_id}}*/)">
+        <option value="">Select Material</option>
+    </select>
+</div>
+<div class="form-group">
+    <label for="customItemColor-{{ROW_ID}}">Color</label>
+    <select id="customItemColor-{{ROW_ID}}" class="custom-item-color enhanced-select">
+        <option value="">Select Color</option>
+    </select>
+</div>
+<div class="form-group">
+    <label for="customItemQuantity-{{ROW_ID}}">Quantity</label>
+    <input type="text" id="customItemQuantity-{{ROW_ID}}" value="1", min="1", max="100">
+</div>
+<button type="button" id="custom-item-remove-btn" class="danger-btn remove-custom-item" style="display: none;">Remove</button>
