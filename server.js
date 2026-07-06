@@ -3,6 +3,7 @@ const expressSession = require('express-session');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const helmet = require('helmet');
+const crypto = require('crypto');
 const https = require('https');
 const path = require('path');
 const fs = require('fs');
@@ -68,7 +69,7 @@ function calculateTotalOrderPrice(items) {
         items = [items];
     }
 
-    for (const item of items) {
+    for (const item in items) {
         total += calculateIndividualItemPrice(item);
     }
 
@@ -76,19 +77,10 @@ function calculateTotalOrderPrice(items) {
 }
 
 function calculateIndividualItemPrice(item) {
-    const itemDetails = getItemDetailsByName(item.Name);
+    const itemDetails = items[item.Name];
 
     const materialPriceRatio = materials[item.Material].Price / materials[itemDetails.DefaultMaterial].Price;
     return itemDetails.Price * materialPriceRatio * item.Quantity;
-}
-
-function getItemDetailsByName(itemName) {
-    for (const item of items) {
-        if (item.Name == itemName) {
-            return item;
-        }
-    }
-    console.error(`Did Not Find Item "${itemName}" In Items List`);
 }
 
 function verifyOrder(order) {
@@ -109,7 +101,7 @@ function verifyOrder(order) {
                 throw new TypeError('Item Does Not Exist.');
             }
 
-            const itemDetails = getItemDetailsByName(existingItem.Name);
+            const itemDetails = items[existingItem.Name];
 
             if (itemDetails.Materials.indexOf(existingItem.Material) == -1) {
                 throw new TypeError('Material Is Invalid For Item Type.')
@@ -155,12 +147,7 @@ function verifyOrder(order) {
 }
 
 function doesItemExist(itemName) {
-    for (const item of items) {
-        if (item.Name == itemName) {
-            return true;
-        }
-    }
-    return false;
+    return items.hasOwnProperty(itemName);
 }
 
 function isValidUrl(url) {
@@ -519,4 +506,3 @@ if (production) {
         console.log(`Server Running On Port ${port}!`);
     });
 }
-
