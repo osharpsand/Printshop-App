@@ -1,5 +1,6 @@
 (function () {
     const SELECT_SELECTOR = 'select.enhanced-select';
+    let activeCustomSelect = null;
 
     class CustomSelect {
         constructor(select) {
@@ -93,11 +94,20 @@
         }
 
         open() {
+            if (activeCustomSelect && activeCustomSelect !== this) {
+                activeCustomSelect.close();
+            }
+
             this.wrapper.classList.add('is-open');
+            activeCustomSelect = this;
             this.trigger.setAttribute('aria-expanded', 'true');
         }
 
         close() {
+            if (activeCustomSelect === this) {
+                activeCustomSelect = null;
+            }
+            
             this.wrapper.classList.remove('is-open');
             this.trigger.setAttribute('aria-expanded', 'false');
         }

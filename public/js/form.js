@@ -12,19 +12,26 @@ let existingItemsCount = 0;
 let customItemsCount = 0;
 
 function setup() {
-    addExistingItem();
-    addCustomItem();
+    addExistingItemRow();
+    addCustomItemRow();
 
     const form = getElement('orderForm');
     form.addEventListener('submit', handleFormSubmit())
+
+    const existingItemsContainer = getElement('existingItemsContainer');
+    const existingItemsContainerObserver = new MutationObserver((Mutations) => {
+       cleanupExistingItemRows();
+    });
+
+    existingItemsContainerObserver.observe(existingItemsContainer, {
+        childList: true,
+        characterData: true,
+        subtree: true
+    });
 }
 
 function getElement(id) {
     return document.getElementById(id);
-}
-
-function getExistingItemRow(rowId) {
-    return getElement(`existing-item-row-${rowId}`);
 }
 
 function createElement(type, parent, options) {
@@ -40,53 +47,59 @@ function createElement(type, parent, options) {
     return element;
 }
 
-function addExistingItem() {
-    const container = getElement('existingItemsContainer');
-    const elementId = existingItemsCount++;
+function getExistingItemRow(rowId) {
+    return getElement(`existingItemRow-${rowId}`);
+}
 
-    const itemRow = existingItemRow
-        .replaceAll('/*{{ROW_ID}}*/', elementId)
-        .replaceAll('{{ROW_ID}}', elementId);
+function getExistingItemRowId(rowElement) {
+    return rowElement.id.split('-')[1];
+}
 
-    const existingItem = createElement('div', container, {
+function isExistingItemRowEmpty(rowId) {
+    const existingItemRow = getExistingItemRow(rowId);
+
+    const existingItemNameSelection = existingItemRow.querySelector('.existing-item-name');
+    const existingItemQuantitySelection = existingItemRow.querySelector('.existing-item-quantity');
+
+    const existingItemName = existingItemNameSelection.value;
+    const existingItemQuantity = existingItemQuantitySelection.value;
+
+    return existingItemName == '' && existingItemQuantity == 1;
+}
+
+function addExistingItemRow() {
+    const existingItemsContainer = getElement('existingItemsContainer');
+    const rowId = existingItemsCount++;
+
+    const newExistingItemContent = existingItemRow.replaceAll('{{ROW_ID}}', rowId);
+
+    const newExistingItemRow = createElement('div', existingItemsContainer, {
         ClassName: 'existing-item-row',
-        Id: `existing-item-row-${elementId}`,
-        InnerHTML: itemRow
+        Id: `existingItemRow-${rowId}`,
+        InnerHTML: newExistingItemContent
     });
 
-    const existingItemNameSelection = existingItem.querySelector('.existing-item-name')
-    const existingItemMaterialSelection = existingItem.querySelector('.existing-item-material');
+    const newExistingItemNameSelection = newExistingItemRow.querySelector('.existing-item-name')
+    const newExistingItemMaterialSelection = newExistingItemRow.querySelector('.existing-item-material');
 
     for (const existingItemName in existingItems) {
         const existingItem = existingItems[existingItemName];
-        createElement('option', existingItemNameSelection, {
+
+        createElement('option', newExistingItemNameSelection, {
             InnerHTML: `${existingItemName} - $${Number(existingItem.Price).toFixed(2)}`,
             Value: existingItemName
         });
     }
 
-    existingItemNameSelection.addEventListener('change', () => {
-        updateExistingItemMaterialOptions(elementId);
+    const newExistingItemRemoveBtn = newExistingItemRow.querySelector('.remove-existing-item');
+
+    newExistingItemNameSelection.addEventListener('change', () => {
+        updateExistingItemMaterialOptions(rowId);
+        updateExistingItemRemoveButton(rowId);
     });
 
-    existingItemMaterialSelection.addEventListener('change', () => {
-        updateExistingItemColorOptions(elementId);
-    })
-}
-
-function addCustomItem() {
-    const container = getElement('customItemsContainer');
-    const elementId = customItemsCount++;
-
-    let itemRow = customItemRow;
-    itemRow = itemRow.replaceAll('/*{{ROW_ID}}*/', elementId);
-    itemRow = itemRow.replaceAll('{{ROW_ID}}', elementId);
-
-    const customItem = createElement('div', container, {
-        ClassName: 'custom-item-row',
-        Id: `existing-item-${elementId}`,
-        InnerHTML: itemRow
-    });
+    newExistingItemMaterialSelection.addEventListener('change', () => updateExistingItemColorOptions(rowId));
+    newExistingItemRemoveBtn.addEventListener('click', () => newExistingItemRow.remove());
 }
 
 function updateExistingItemMaterialOptions(rowId) {
@@ -102,7 +115,10 @@ function updateExistingItemMaterialOptions(rowId) {
         Value: ''
     });
     
-    if (!existingItems.hasOwnProperty(existingItemName)) { return; }
+    if (!existingItems.hasOwnProperty(existingItemName)) {
+        updateExistingItemColorOptions(rowId);
+        return;
+    }
 
     const existingItem = existingItems[existingItemName];
     const defaultMaterial = existingItem.DefaultMaterial;
@@ -132,7 +148,7 @@ function updateExistingItemColorOptions(rowId) {
         Value: ''
     });
 
-    if (!materials.hasOwnProperty(existingItemMaterial)) { return; }
+    if (!materials.hasOwnProperty(existingItemMaterial)) return;
 
     const colorOptions = materials[existingItemMaterial].Colors;
 
@@ -148,6 +164,65 @@ function updateExistingItemColorOptions(rowId) {
             Value: colorOptionName
         });
     }
+}
+
+function updateExistingItemRemoveButton(rowId) {
+    const existingItemRow = getExistingItemRow(rowId);
+    const removeBtn = existingItemRow.querySelector('.danger-btn');
+    
+    removeBtn.style.display = isExistingItemRowEmpty(rowId) ? 'none' : 'block';
+}
+
+function cleanupExistingItemRows() {
+    const container = getElement('existingItemsContainer');
+    const existingItemRows = Array.from(container.children);
+
+    if (existingItemRows.length <= 0) addExistingItemRow();
+
+    for (const existingItemRow of existingItemRows.slice(0, -1)) {
+        const rowId = getExistingItemRowId(existingItemRow);
+        const itemRow = getExistingItemRow(rowId);
+        
+        if (isExistingItemRowEmpty(rowId)) itemRow.remove();
+    }
+
+    const existingItemRowsCount = existingItemRows.length;
+
+    const lastExistingItemRow = existingItemRows[existingItemRowsCount - 1];
+    const lastExistingItemRowId = getExistingItemRowId(lastExistingItemRow);
+
+    if (!isExistingItemRowEmpty(lastExistingItemRowId)) addExistingItemRow();
+}
+
+function addCustomItemRow() {
+    const customItemsContainer = getElement('customItemsContainer');
+    const rowId = customItemsCount++;
+
+    const newCustomItemContent = customItemRow.replaceAll('{{ROW_ID}}', rowId);
+
+    const newCustomItemRow = createElement('div', customItemsContainer, {
+        ClassName: 'custom-item-row',
+        Id: `customItemRow-${rowId}`,
+        InnerHTML: newCustomItemContent
+    });
+
+    const newCustomItemMaterialSection = newCustomItemRow.querySelector('.custom-item-material');
+
+    for (const material in materials) {
+        createElement('option', newCustomItemMaterialSection, {
+            InnerHTML: material,
+            Value: material
+        });
+    }
+
+    const newCustomItemRemoveBtn = newCustomItemRow.querySelector('.remove-custom-item');
+
+    newCustomItemMaterialSection.addEventListener('change', () => updateCustomItemColorOptions(rowId));
+    newCustomItemRemoveBtn.addEventListener('change', () => newCustomItemRow.remove());
+}
+
+function updateCustomItemColorOptions(rowId) {
+
 }
 
 function handleFormSubmit() {

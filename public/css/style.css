@@ -201,7 +201,7 @@ textarea {
 button {
     padding: 12px;
     min-height: 38px;
-    margin: 20px 0 10px 0;
+    margin: 0px 0 8px 0;
     background-color: #4CAF50;
     color: white;
     border: none;
@@ -414,8 +414,8 @@ hr {
 }
 
 .existing-item-color-swatch {
-    width: 10px;
-    height: 10px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     border: 1px solid #666;
     background-color: var(--swatch-color);
@@ -424,4 +424,6 @@ hr {
 
 .existing-item-color-name {
     display: inline-block;
+    padding-left: 4px;
+    transform: translateY(1px);
 }
