@@ -6,7 +6,8 @@ A simple application for myself to submit and manage print orders.
 
 ### Prerequisites
 
-- Node.js (14+)
+- Node.js (22+)
+- NVM
 - pnpm
 
 ### Install
