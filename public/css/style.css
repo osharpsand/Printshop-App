@@ -367,6 +367,7 @@ hr {
     border-radius: 4px;
     margin-bottom: 15px;
     align-items: end;
+    grid-auto-flow: column;
 }
 
 .custom-item-row .form-group {
@@ -417,12 +418,33 @@ hr {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    border: 1px solid #666;
+    border: 1px solid #000;
     background-color: var(--swatch-color);
     flex-shrink: 0;
 }
 
 .existing-item-color-name {
+    display: inline-block;
+    padding-left: 4px;
+    transform: translateY(1px);
+}
+
+.custom-item-color-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.custom-item-color-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid #000;
+    background-color: var(--swatch-color);
+    flex-shrink: 0;
+}
+
+.custom-item-color-name {
     display: inline-block;
     padding-left: 4px;
     transform: translateY(1px);
