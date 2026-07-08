@@ -7,6 +7,7 @@ const existingItemRow = await getTemplateFromServer('existingItemRow');
 const customItemRow = await getTemplateFromServer('customItemRow');
 
 const existingItemColorOption = await getTemplateFromServer('existingItemColorOption');
+const customItemColorOption = await getTemplateFromServer('customItemColorOption');
 
 let existingItemsCount = 0;
 let customItemsCount = 0;
@@ -17,17 +18,6 @@ function setup() {
 
     const form = getElement('orderForm');
     form.addEventListener('submit', handleFormSubmit())
-
-    const existingItemsContainer = getElement('existingItemsContainer');
-    const existingItemsContainerObserver = new MutationObserver((Mutations) => {
-       cleanupExistingItemRows();
-    });
-
-    existingItemsContainerObserver.observe(existingItemsContainer, {
-        childList: true,
-        characterData: true,
-        subtree: true
-    });
 }
 
 function getElement(id) {
@@ -91,23 +81,38 @@ function addExistingItemRow() {
         });
     }
 
+    const newExistingItemQuantitySelection = newExistingItemRow.querySelector('.existing-item-quantity');
     const newExistingItemRemoveBtn = newExistingItemRow.querySelector('.remove-existing-item');
 
     newExistingItemNameSelection.addEventListener('change', () => {
         updateExistingItemMaterialOptions(rowId);
-        updateExistingItemRemoveButton(rowId);
+        updateExistingItemRemoveBtn(rowId);
+        cleanupExistingItemRows();
     });
 
-    newExistingItemMaterialSelection.addEventListener('change', () => updateExistingItemColorOptions(rowId));
-    newExistingItemRemoveBtn.addEventListener('click', () => newExistingItemRow.remove());
+    newExistingItemMaterialSelection.addEventListener('change', () => { 
+        updateExistingItemColorOptions(rowId);
+        updateExistingItemRemoveBtn(rowId);
+        cleanupExistingItemRows();
+    });
+
+    newExistingItemQuantitySelection.addEventListener('input', () => {
+        updateExistingItemRemoveBtn(rowId);
+        cleanupExistingItemRows();
+    });
+
+    newExistingItemRemoveBtn.addEventListener('click', () => {
+        newExistingItemRow.remove();
+        cleanupExistingItemRows();
+    });
 }
 
 function updateExistingItemMaterialOptions(rowId) {
-    const row = getExistingItemRow(rowId);
-    const existingItemNameSelection = row.querySelector('.existing-item-name');
+    const existingItemRow = getExistingItemRow(rowId);
+    const existingItemNameSelection = existingItemRow.querySelector('.existing-item-name');
     const existingItemName = existingItemNameSelection.value;
 
-    const existingItemMaterialSelection = row.querySelector('.existing-item-material');
+    const existingItemMaterialSelection = existingItemRow.querySelector('.existing-item-material');
 
     existingItemMaterialSelection.innerHTML = '';
     createElement('option', existingItemMaterialSelection, {
@@ -121,26 +126,27 @@ function updateExistingItemMaterialOptions(rowId) {
     }
 
     const existingItem = existingItems[existingItemName];
-    const defaultMaterial = existingItem.DefaultMaterial;
-    const materialOptions = existingItem.Materials;
+    const existingItemDefaultMaterial = existingItem.DefaultMaterial;
+    const existingItemMaterialOptions = existingItem.Materials;
 
-    for (const materialOptionName of materialOptions) {
+    for (const existingItemMaterialOptionName of existingItemMaterialOptions) {
         createElement('option', existingItemMaterialSelection, {
-            InnerHTML: materialOptionName,
-            Value: materialOptionName
+            InnerHTML: existingItemMaterialOptionName,
+            Value: existingItemMaterialOptionName
         });
     }
 
-    existingItemMaterialSelection.value = defaultMaterial;
+    existingItemMaterialSelection.value = existingItemDefaultMaterial;
     updateExistingItemColorOptions(rowId);
 }
 
 function updateExistingItemColorOptions(rowId) {
-    const row = getExistingItemRow(rowId);
-    const existingItemMaterialSelection = row.querySelector('.existing-item-material');
+    const existingItemRow = getExistingItemRow(rowId);
+
+    const existingItemMaterialSelection = existingItemRow.querySelector('.existing-item-material');
     const existingItemMaterial = existingItemMaterialSelection.value;
 
-    const existingItemColorSelection = row.querySelector('.existing-item-color');
+    const existingItemColorSelection = existingItemRow.querySelector('.existing-item-color');
 
     existingItemColorSelection.innerHTML = '';
     createElement('option', existingItemColorSelection, {
@@ -166,24 +172,23 @@ function updateExistingItemColorOptions(rowId) {
     }
 }
 
-function updateExistingItemRemoveButton(rowId) {
+function updateExistingItemRemoveBtn(rowId) {
     const existingItemRow = getExistingItemRow(rowId);
-    const removeBtn = existingItemRow.querySelector('.danger-btn');
+    const existingItemRemoveBtn = existingItemRow.querySelector('.danger-btn');
     
-    removeBtn.style.display = isExistingItemRowEmpty(rowId) ? 'none' : 'block';
+    existingItemRemoveBtn.style.display = isExistingItemRowEmpty(rowId) ? 'none' : 'block';
 }
 
 function cleanupExistingItemRows() {
-    const container = getElement('existingItemsContainer');
-    const existingItemRows = Array.from(container.children);
+    const existingItemsContainer = getElement('existingItemsContainer');
+    const existingItemRows = Array.from(existingItemsContainer.children);
 
     if (existingItemRows.length <= 0) addExistingItemRow();
 
     for (const existingItemRow of existingItemRows.slice(0, -1)) {
-        const rowId = getExistingItemRowId(existingItemRow);
-        const itemRow = getExistingItemRow(rowId);
+        const existingItemRowId = getExistingItemRowId(existingItemRow);
         
-        if (isExistingItemRowEmpty(rowId)) itemRow.remove();
+        if (isExistingItemRowEmpty(existingItemRowId)) existingItemRow.remove();
     }
 
     const existingItemRowsCount = existingItemRows.length;
@@ -192,6 +197,30 @@ function cleanupExistingItemRows() {
     const lastExistingItemRowId = getExistingItemRowId(lastExistingItemRow);
 
     if (!isExistingItemRowEmpty(lastExistingItemRowId)) addExistingItemRow();
+}
+
+function getCustomItemRow(rowId) {
+    return getElement(`customItemRow-${rowId}`);
+}
+
+function getCustomItemRowId(rowElement) {
+    return rowElement.id.split('-')[1];
+}
+
+function isCustomItemRowEmpty(rowId) {
+    const customItemRow = getCustomItemRow(rowId);
+
+    const customItemLinkSelection = customItemRow.querySelector('.custom-item-link');
+    const customItemMaterialSelection = customItemRow.querySelector('.custom-item-material');
+    const customItemQuantitySelection = customItemRow.querySelector('.custom-item-quantity');
+
+    const customItemLink = customItemLinkSelection.value;
+    const customItemMaterial = customItemMaterialSelection.value;
+    const customItemQuantity = customItemQuantitySelection.value;
+
+    return ( customItemLink == '' || customItemLink == 'https://example.com' ) &&
+        ( customItemMaterial == '' || customItemMaterial == 'Select Material' ) &&
+        customItemQuantity == 1;
 }
 
 function addCustomItemRow() {
@@ -206,23 +235,98 @@ function addCustomItemRow() {
         InnerHTML: newCustomItemContent
     });
 
-    const newCustomItemMaterialSection = newCustomItemRow.querySelector('.custom-item-material');
+    const newCustomItemMaterialSelection = newCustomItemRow.querySelector('.custom-item-material');
 
     for (const material in materials) {
-        createElement('option', newCustomItemMaterialSection, {
+        createElement('option', newCustomItemMaterialSelection, {
             InnerHTML: material,
             Value: material
         });
     }
 
+    const newCustomItemLinkSelection = newCustomItemRow.querySelector('.custom-item-link');
+    const newCustomItemQuantitySelection = newCustomItemRow.querySelector('.custom-item-quantity');
     const newCustomItemRemoveBtn = newCustomItemRow.querySelector('.remove-custom-item');
 
-    newCustomItemMaterialSection.addEventListener('change', () => updateCustomItemColorOptions(rowId));
-    newCustomItemRemoveBtn.addEventListener('change', () => newCustomItemRow.remove());
+    newCustomItemLinkSelection.addEventListener('input', () => {
+        updateCustomItemRemoveBtn(rowId);
+        cleanupCustomItemRows();
+    });
+
+    newCustomItemMaterialSelection.addEventListener('change', () => {
+        updateCustomItemColorOptions(rowId);
+        updateCustomItemRemoveBtn(rowId);
+        cleanupCustomItemRows();
+    });
+
+    newCustomItemQuantitySelection.addEventListener('input', () => {
+        updateCustomItemRemoveBtn(rowId);
+        cleanupCustomItemRows();
+    });
+
+    newCustomItemRemoveBtn.addEventListener('click', () => {
+        newCustomItemRow.remove();
+        cleanupCustomItemRows();
+    });
 }
 
 function updateCustomItemColorOptions(rowId) {
+    const customItemRow = getCustomItemRow(rowId);
 
+    const customItemMaterialSelection = customItemRow.querySelector('.custom-item-material');
+    const customItemMaterial = customItemMaterialSelection.value;
+
+    const customItemColorSelection = customItemRow.querySelector('.custom-item-color');
+
+    customItemColorSelection.innerHTML = '';
+    createElement('option', customItemColorSelection, {
+        InnerHTML: 'Select Color',
+        Value: ''
+    });
+
+    if (!materials.hasOwnProperty(customItemMaterial)) return;
+
+    const colorOptions = materials[customItemMaterial].Colors;
+
+    for (const colorOptionName of Object.keys(colorOptions)) {
+        const colorHex = colorOptions[colorOptionName];
+
+        const colorOption = customItemColorOption
+            .replaceAll('{{COLOR_HEX}}', colorHex)
+            .replaceAll('{{COLOR_NAME}}', colorOptionName);
+
+        createElement('option', customItemColorSelection, {
+            InnerHTML: colorOption,
+            Value: colorOptionName
+        });
+    }
+}
+
+function updateCustomItemRemoveBtn(rowId) {
+    const customItemRow = getCustomItemRow(rowId);
+    const customItemRemoveBtn = customItemRow.querySelector('.remove-custom-item');
+
+    customItemRemoveBtn.style.display = isCustomItemRowEmpty(rowId) ? 'none' : 'block';
+}
+
+function cleanupCustomItemRows() {
+    const customItemsContainer = getElement('customItemsContainer');
+    const customItemRows = Array.from(customItemsContainer.children);
+
+    if (customItemRows.length <= 0) addCustomItemRow();
+
+    for (const customItemRow of customItemRows.slice(0, -1)) {
+        const customItemRowId = getCustomItemRowId(customItemRow);
+        
+        if (isCustomItemRowEmpty(customItemRowId)) customItemRow.remove(); 
+    }
+
+    const customItemRowsCount = customItemRows.length;
+
+    const lastCustomItemRow = customItemRows[customItemRowsCount - 1];
+    const lastCustomItemRowId = getCustomItemRowId(lastCustomItemRow);
+
+    if (!isCustomItemRowEmpty(lastCustomItemRowId)) addCustomItemRow();
 }
 
 function handleFormSubmit() {
