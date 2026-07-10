@@ -69,7 +69,7 @@ function calculateTotalOrderPrice(items) {
         items = [items];
     }
 
-    for (const item in items) {
+    for (const item of items) {
         total += calculateIndividualItemPrice(item);
     }
 
@@ -118,8 +118,8 @@ function verifyOrder(order) {
     if (customItems && customItems != '') {
         anyItems = true;
         for (const customItem of customItems) {
-            if (!isValidUrl(customItem.URL)) {
-                throw new TypeError('Item URL Is Invalid.');
+            if (!isValidUrl(customItem.Link)) {
+                throw new TypeError('Item Link Is Invalid.');
             }
 
             if (doesItemExist(customItem.Name)) {
@@ -153,7 +153,7 @@ function doesItemExist(itemName) {
 function isValidUrl(url) {
     try {
         const urlTest = new URL(url.includes('://') ? url : `https://${url}`);
-        return url.hostname.includes('.');
+        return urlTest.hostname.includes('.');
     } catch {
         return false;
     }
@@ -220,7 +220,7 @@ function finishOrder(orderId) {
 
 const submitOrderRateLimit = expressRateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 1,
+    max: 2,
     message: 'Too Many Requests, Please Try Agian Later'
 });
 
@@ -290,7 +290,7 @@ app.get('/api/materials', (req, res) => {
     res.json(materials);
 });
 
-app.post('/api/calculatePrice', (req, res) => {
+app.post('/api/calculateOrderPrice', (req, res) => {
     /* items FORMAT
     [
         {
@@ -334,11 +334,15 @@ app.post('/api/submitOrder', submitOrderRateLimit, (req, res) => {
                 }
             ],
             "CustomItems": [
-                "Name": "String",
-                "URL": "String",
-                "Material": "String",
-                "Color": "String",
-                "Quantity": Integer
+                {
+                    "Link": "String",
+                    "Material": "String",
+                    "Color": "String",
+                    "Quantity": Integer
+                },
+                {
+                    ...
+                }
             ]
         }
     */

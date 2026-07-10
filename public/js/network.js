@@ -15,7 +15,7 @@ async function getFromServer(address) {
         method: 'GET'
     });
 
-    return processResponse(response);
+    return await processResponse(response);
 }
 
 async function postToServer(address, data) {
@@ -27,7 +27,7 @@ async function postToServer(address, data) {
         }
     });
 
-    return processResponse(response);
+    return await processResponse(response);
 }
 
 async function getFileFromServer(address) {
@@ -35,7 +35,7 @@ async function getFileFromServer(address) {
         method: 'GET'
     });
 
-    return processResponse(response);
+    return await processResponse(response);
 }
 
 async function getPageFromServer(page) {
