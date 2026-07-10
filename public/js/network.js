@@ -1,4 +1,4 @@
-async function processResponse(response) {
+export async function processResponse(response) {
     if (response.redirected) {
         window.location.href = response.url;
         return response.url;
@@ -10,7 +10,7 @@ async function processResponse(response) {
     }
 }
 
-async function getFromServer(address) {
+export async function getFromServer(address) {
     const response = await fetch(`${window.location.origin}/api/${address}`, {
         method: 'GET'
     });
@@ -18,7 +18,7 @@ async function getFromServer(address) {
     return await processResponse(response);
 }
 
-async function postToServer(address, data) {
+export async function postToServer(address, data) {
     const response = await fetch(`${window.location.origin}/api/${address}`, {
         method: 'POST',
         body: JSON.stringify(data),
@@ -30,7 +30,7 @@ async function postToServer(address, data) {
     return await processResponse(response);
 }
 
-async function getFileFromServer(address) {
+export async function getFileFromServer(address) {
     const response = await fetch(`${window.location.origin}/${address}`, {
         method: 'GET'
     });
@@ -38,16 +38,20 @@ async function getFileFromServer(address) {
     return await processResponse(response);
 }
 
-async function getPageFromServer(page) {
+export async function getPageFromServer(page) {
     const response = await getFileFromServer(`pages/${page}`);
 
     return response;
 }
 
-async function getTemplateFromServer(template) {
+export async function getTemplateFromServer(template) {
     const response = await getFileFromServer(`templates/${template}`);
 
     return response;
 }
 
-export { getFromServer, postToServer, getFileFromServer, getPageFromServer, getTemplateFromServer };
+export async function doesFilamentIconExist(material, color) {
+    return (await getFromServer(`doesFilamentIconExist/${material}/${color}`)) == 'true';
+}
+
+//export { getFromServer, postToServer, getFileFromServer, getPageFromServer, getTemplateFromServer };
