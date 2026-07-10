@@ -24,12 +24,20 @@ function getElement(id) {
     return document.getElementById(id);
 }
 
-function createElement(type, parent, options) {
+function createElement(type, parent, options, replacements) {
     const element = document.createElement(type);
+
+    let innerHTML = options.InnerHTML;
+
+    for (const replacementName in replacements) {
+        const replacementValue = replacements[replacementName];
+
+        innerHTML = innerHTML.replaceAll(`{{${replacementName}}}`, replacementValue);
+    }
 
     element.className = options.ClassName;
     element.id = options.Id;
-    element.innerHTML = options.InnerHTML;
+    element.innerHTML = innerHTML;
     element.value = options.Value;
 
     parent.appendChild(element);
@@ -75,15 +83,15 @@ function addExistingItemRow() {
     const existingItemsContainer = getElement('existingItemsContainer');
     const rowId = existingItemsCount++;
 
-    const newExistingItemContent = existingItemRow.replaceAll('{{ROW_ID}}', rowId);
-
     const newExistingItemRow = createElement('div', existingItemsContainer, {
         ClassName: 'existing-item-row',
         Id: `existingItemRow-${rowId}`,
-        InnerHTML: newExistingItemContent
+        InnerHTML: existingItemRow
+    }, {
+        'ROW_ID': rowId
     });
 
-    const newExistingItemNameSelection = newExistingItemRow.querySelector('.existing-item-name')
+    const newExistingItemNameSelection = newExistingItemRow.querySelector('.existing-item-name');
     const newExistingItemMaterialSelection = newExistingItemRow.querySelector('.existing-item-material');
 
     for (const existingItemName in existingItems) {
@@ -175,13 +183,12 @@ function updateExistingItemColorOptions(rowId) {
     for (const colorOptionName of Object.keys(colorOptions)) {
         const colorHex = colorOptions[colorOptionName];
 
-        const colorOption = existingItemColorOption
-            .replaceAll('{{COLOR_HEX}}', colorHex)
-            .replaceAll('{{COLOR_NAME}}', colorOptionName);
-
         createElement('option', existingItemColorSelection, {
-            InnerHTML: colorOption,
+            InnerHTML: existingItemColorOption,
             Value: colorOptionName
+        }, {
+            'COLOR_HEX': colorHex,
+            'COLOR_NAME': colorOptionName
         });
     }
 
@@ -261,12 +268,12 @@ function addCustomItemRow() {
     const customItemsContainer = getElement('customItemsContainer');
     const rowId = customItemsCount++;
 
-    const newCustomItemContent = customItemRow.replaceAll('{{ROW_ID}}', rowId);
-
     const newCustomItemRow = createElement('div', customItemsContainer, {
         ClassName: 'custom-item-row',
         Id: `customItemRow-${rowId}`,
-        InnerHTML: newCustomItemContent
+        InnerHTML: customItemRow
+    }, {
+        'ROW_ID': rowId
     });
 
     const newCustomItemMaterialSelection = newCustomItemRow.querySelector('.custom-item-material');
@@ -325,13 +332,12 @@ function updateCustomItemColorOptions(rowId) {
     for (const colorOptionName of Object.keys(colorOptions)) {
         const colorHex = colorOptions[colorOptionName];
 
-        const colorOption = customItemColorOption
-            .replaceAll('{{COLOR_HEX}}', colorHex)
-            .replaceAll('{{COLOR_NAME}}', colorOptionName);
-
         createElement('option', customItemColorSelection, {
-            InnerHTML: colorOption,
+            InnerHTML: customItemColorOption,
             Value: colorOptionName
+        }, {
+            'COLOR_HEX': colorHex,
+            'COLOR_NAME': colorOptionName
         });
     }
 }
