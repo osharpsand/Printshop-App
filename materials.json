@@ -149,10 +149,13 @@
     "PETG-CF": {
         "Price": 30,
         "Colors": {
-            "Any":         "#FFFFFF",
-            "Black":       "#222124",
-            "Brick Red":   "#9F332A",
-            "Indigo Blue": "#324585"
+            "Any":             "#FFFFFF",
+            "Black":           "#222124",
+            "Brick Red":       "#9F332A",
+            "Indigo Blue":     "#324585",
+            "Malachite Green": "#16B08E",
+            "Violet Purple":   "#583061",
+            "Titan Gray":      "#565656"
         }
     },
     "PAHT-CF": {

@@ -17,7 +17,7 @@ function setup() {
     addCustomItemRow();
 
     const form = getElement('orderForm');
-    form.addEventListener('submit', handleFormSubmit())
+    form.addEventListener('submit', handleFormSubmit)
 }
 
 function getElement(id) {
@@ -55,6 +55,20 @@ function isExistingItemRowEmpty(rowId) {
     const existingItemQuantity = existingItemQuantitySelection.value;
 
     return existingItemName == '' && existingItemQuantity == 1;
+}
+
+function isExistingItemRowFilled(rowId) {
+    const existingItemRow = getExistingItemRow(rowId);
+
+    const existingItemNameSelection = existingItemRow.querySelector('.existing-item-name');
+    const existingItemMaterialSelection = existingItemRow.querySelector('.existing-item-material');
+    const existingItemColorSelection = existingItemRow.querySelector('.existing-item-color');
+
+    const existingItemName = existingItemNameSelection.value;
+    const existingItemMaterial = existingItemMaterialSelection.value;
+    const existingItemColor = existingItemColorSelection.value;
+
+    return existingItemName != '' && existingItemMaterial != '' && existingItemColor != '';
 }
 
 function addExistingItemRow() {
@@ -170,6 +184,10 @@ function updateExistingItemColorOptions(rowId) {
             Value: colorOptionName
         });
     }
+
+    if (Object.keys(colorOptions).length == 1) {
+        existingItemColorSelection.value = Object.keys(colorOptions)[0];
+    }
 }
 
 function updateExistingItemRemoveBtn(rowId) {
@@ -196,6 +214,8 @@ function cleanupExistingItemRows() {
     const lastExistingItemRow = existingItemRows[existingItemRowsCount - 1];
     const lastExistingItemRowId = getExistingItemRowId(lastExistingItemRow);
 
+    updateExistingItemsTotalPrice();
+
     if (!isExistingItemRowEmpty(lastExistingItemRowId)) addExistingItemRow();
 }
 
@@ -219,8 +239,22 @@ function isCustomItemRowEmpty(rowId) {
     const customItemQuantity = customItemQuantitySelection.value;
 
     return ( customItemLink == '' || customItemLink == 'https://example.com' ) &&
-        ( customItemMaterial == '' || customItemMaterial == 'Select Material' ) &&
+        customItemMaterial == '' &&
         customItemQuantity == 1;
+}
+
+function isCustomItemRowFilled(rowId) {
+    const customItemRow = getCustomItemRow(rowId);
+
+    const customItemLinkSelection = customItemRow.querySelector('.custom-item-link');
+    const customItemMaterialSelection = customItemRow.querySelector('.custom-item-material');
+    const customItemColorSelection = customItemRow.querySelector('.custom-item-color');
+
+    const customItemLink = customItemLinkSelection.value;
+    const customItemMaterial = customItemMaterialSelection.value;
+    const customItemColor = customItemColorSelection.value;
+
+    return customItemLink != '' && customItemLink != 'https://example.com' && customItemMaterial != '' && customItemColor != '';
 }
 
 function addCustomItemRow() {
@@ -329,8 +363,125 @@ function cleanupCustomItemRows() {
     if (!isCustomItemRowEmpty(lastCustomItemRowId)) addCustomItemRow();
 }
 
-function handleFormSubmit() {
+async function updateExistingItemsTotalPrice() {
+    const existingItemsContainer = getElement('existingItemsContainer');
+    const existingItemRows = Array.from(existingItemsContainer.children);
 
+    const existingItemsTotalPriceContainer = getElement('existingItemsTotalPriceContainer');
+    const existingItemsTotalPriceText = getElement('existingItemsTotalPriceText');
+    
+    existingItemsTotalPriceText.innerHTML = '0.00';
+    existingItemsTotalPriceContainer.style.display = 'none';
+
+    if (existingItemRows.length <= 0) return;
+
+    let existingItemsData = [];
+
+    for (const existingItemRow of existingItemRows) {
+        const existingItemNameSelection = existingItemRow.querySelector('.existing-item-name');
+        const existingItemMaterialSelection = existingItemRow.querySelector('.existing-item-material');
+        const existingItemQuantitySelection = existingItemRow.querySelector('.existing-item-quantity');
+
+        if (existingItemNameSelection.value && existingItemMaterialSelection.value && existingItemQuantitySelection.value) {
+            existingItemsData.push({
+                Name: existingItemNameSelection.value,
+                Material: existingItemMaterialSelection.value,
+                Quantity: existingItemQuantitySelection.value
+            });
+        }
+    }
+
+    const existingItemsTotalPrice = await postToServer('calculateOrderPrice', existingItemsData);
+
+    if (isFinite(Number(existingItemsTotalPrice)) && existingItemsTotalPrice != '0.00') {
+        existingItemsTotalPriceText.innerHTML = existingItemsTotalPrice;
+        existingItemsTotalPriceContainer.style.display = 'block';
+    }
+}
+
+async function handleFormSubmit(submitEvent) {
+    submitEvent.preventDefault();
+
+    const orderForm = getElement('orderForm');
+
+    const existingItemsContainer = getElement('existingItemsContainer');
+    const customItemsContainer = getElement('customItemsContainer');
+
+    const existingItemRows = Array.from(existingItemsContainer.children);
+    const customItemRows = Array.from(customItemsContainer.children);
+
+    const firstName = orderForm.querySelector('.first-name').value;
+    const lastName = orderForm.querySelector('.last-name').value;
+    const contact = orderForm.querySelector('.contact').value || '';
+    const notes = orderForm.querySelector('.notes').value || '';
+
+    let existingOrders = [];
+    for (const existingItemRow of existingItemRows) {
+        const existingItemRowId = getExistingItemRowId(existingItemRow);
+
+        if(isExistingItemRowFilled(existingItemRowId)) {
+            const existingItemNameSelection = existingItemRow.querySelector('.existing-item-name');
+            const existingItemMaterialSelection = existingItemRow.querySelector('.existing-item-material');
+            const existingItemColorSelection = existingItemRow.querySelector('.existing-item-color');
+            const existingItemQuantitySelection = existingItemRow.querySelector('.existing-item-quantity');
+
+            const existingItemName = existingItemNameSelection.value;
+            const existingItemMaterial = existingItemMaterialSelection.value;
+            const existingItemColor = existingItemColorSelection.value;
+            const existingItemQuantity = existingItemQuantitySelection.value;
+
+            existingOrders.push({
+                Name: existingItemName,
+                Material: existingItemMaterial,
+                Color: existingItemColor,
+                Quantity: existingItemQuantity
+            });
+        }
+    }
+
+    let customOrders = [];
+    for (const customItemRow of customItemRows) {
+        const customItemRowId = getCustomItemRowId(customItemRow);
+
+        if(isCustomItemRowFilled(customItemRowId)) {
+            const customItemLinkSelection = customItemRow.querySelector('.custom-item-link');
+            const customItemMaterialSelection = customItemRow.querySelector('.custom-item-material');
+            const customItemColorSelection = customItemRow.querySelector('.custom-item-color');
+            const customItemQuantitySelection = customItemRow.querySelector('.custom-item-quantity');
+
+            const customItemLink = customItemLinkSelection.value;
+            const customItemMaterial = customItemMaterialSelection.value;
+            const customItemColor = customItemColorSelection.value;
+            const customItemQuantity = customItemQuantitySelection.value;
+
+            customOrders.push({
+                Link: customItemLink,
+                Material: customItemMaterial,
+                Color: customItemColor,
+                Quantity: customItemQuantity
+            });
+        }
+    }
+
+    const orderData = {
+        FirstName: firstName,
+        LastName: lastName,
+        Contact: contact,
+        Notes: notes,
+        ExistingItems: existingOrders,
+        CustomItems: customOrders
+    };
+
+    const response = await postToServer('submitOrder', orderData);
+
+    if (response === 'Successfully Submitted Your Order!') {
+        const successMessageContainer = getElement('successMessageContainer');
+        successMessageContainer.style.display = 'block';
+
+        setTimeout(() => location.reload(), 5000);
+    } else {
+        alert(`Error Submitting Order: ${response}`)
+    }
 }
 
 setup();
