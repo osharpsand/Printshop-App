@@ -24,11 +24,13 @@ const itemsFile = path.join(__dirname, 'items.json');
 const materialsFile = path.join(__dirname, 'materials.json');
 
 const credentials = readJson(credentialsFile, true);
-const items = readJson(itemsFile, true)
+const items = readJson(itemsFile, true);
 const materials = readJson(materialsFile, true);
 
 const pagesDirectory = path.join(__dirname, 'public', 'pages');
 const ordersDirectory = path.join(__dirname, 'orders');
+
+const filamentIconsDirectory = path.join(__dirname, 'public', 'images', 'filamentIcons');
 
 //Functions
 
@@ -277,6 +279,19 @@ app.use((req, res, next) => {
     next();
   }
 });
+app.use((req, res, next) => {
+    const decodedPath = decodeURIComponent(req.path || '');
+
+    if (decodedPath.includes('..')) {
+        res.status(400);
+        res.setHeader('Content-Type', 'text/plain');
+        res.send('Invalid Search Path');
+
+        return;
+    }
+
+    next();
+})
 
 app.get('/', (req, res) => {
     res.redirect(301, getPageUrl('form'));
@@ -472,6 +487,16 @@ app.post('/api/finishOrder', requireAuthentication, async (req, res) => {
     }
 });
 
+app.get('/api/doesFilamentIconExist/:material/:color', (req, res) => {
+    const material = req.params.material;
+    const color = req.params.color;
+
+    const iconPath = path.join(filamentIconsDirectory, material, `${color}.webp`);
+
+    res.setHeader('Content-Type', 'text/plain');
+    res.send(fs.existsSync(iconPath) ? true : false);
+});
+
 app.get('/pages/login', (req, res) => {
     if (req.session.isAuthenticated) {
         res.redirect(303, getPageUrl('orders'));
@@ -484,13 +509,24 @@ app.get('/pages/orders', redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('orders'));
 });
 
-app.get('pages/orders/:id/view', redirectToLoginIfNotAuthenticated, (req, res) => {
+app.get('/pages/orders/:id/view', redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('view-order'));
 })
 
 app.get('/pages/orders/:id/edit', redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('edit-order'));
 })
+
+app.get('/images/filamentIcons/:material/:color.webp', (req, res) => {
+    const material = req.params.material;
+    const color = req.params.color;
+
+    const iconPath = path.join(filamentIconsDirectory, material, `${color}.webp`);
+
+    if (fs.existsSync(iconPath)) {
+        res.sendFile(iconPath);
+    }
+});
 
 app.use(express.static('public', {
     extensions: ['html']

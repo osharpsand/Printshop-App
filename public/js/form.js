@@ -1,4 +1,4 @@
-import { getFromServer, postToServer, getFileFromServer, getPageFromServer, getTemplateFromServer } from './network.js';
+import { getFromServer, postToServer, getFileFromServer, getPageFromServer, getTemplateFromServer, doesFilamentIconExist } from './network.js';
 
 const materials = await getFromServer('materials');
 const existingItems = await getFromServer('items');
@@ -7,7 +7,9 @@ const existingItemRow = await getTemplateFromServer('existingItemRow');
 const customItemRow = await getTemplateFromServer('customItemRow');
 
 const existingItemColorOption = await getTemplateFromServer('existingItemColorOption');
+const existingItemColorImageOption = await getTemplateFromServer('existingItemColorImageOption');
 const customItemColorOption = await getTemplateFromServer('customItemColorOption');
+const customItemColorImageOption = await getTemplateFromServer('existingItemColorImageOption');
 
 let existingItemsCount = 0;
 let customItemsCount = 0;
@@ -162,7 +164,7 @@ function updateExistingItemMaterialOptions(rowId) {
     updateExistingItemColorOptions(rowId);
 }
 
-function updateExistingItemColorOptions(rowId) {
+async function updateExistingItemColorOptions(rowId) {
     const existingItemRow = getExistingItemRow(rowId);
 
     const existingItemMaterialSelection = existingItemRow.querySelector('.existing-item-material');
@@ -181,15 +183,25 @@ function updateExistingItemColorOptions(rowId) {
     const colorOptions = materials[existingItemMaterial].Colors;
 
     for (const colorOptionName of Object.keys(colorOptions)) {
-        const colorHex = colorOptions[colorOptionName];
+        if (await doesFilamentIconExist(existingItemMaterial, colorOptionName)) {
+            createElement('option', existingItemColorSelection, {
+                InnerHTML: existingItemColorImageOption,
+                Value: colorOptionName
+            }, {
+                'COLOR_NAME': colorOptionName,
+                'IMAGE_PATH': `/images/filamentIcons/${existingItemMaterial}/${colorOptionName}.webp`
+            });
+        } else {
+            const colorHex = colorOptions[colorOptionName];
 
-        createElement('option', existingItemColorSelection, {
-            InnerHTML: existingItemColorOption,
-            Value: colorOptionName
-        }, {
-            'COLOR_HEX': colorHex,
-            'COLOR_NAME': colorOptionName
-        });
+            createElement('option', existingItemColorSelection, {
+                InnerHTML: existingItemColorOption,
+                Value: colorOptionName
+            }, {
+                'COLOR_NAME': colorOptionName,
+                'COLOR_HEX': colorHex
+            });
+        }
     }
 
     if (Object.keys(colorOptions).length == 1) {
@@ -311,7 +323,7 @@ function addCustomItemRow() {
     });
 }
 
-function updateCustomItemColorOptions(rowId) {
+async function updateCustomItemColorOptions(rowId) {
     const customItemRow = getCustomItemRow(rowId);
 
     const customItemMaterialSelection = customItemRow.querySelector('.custom-item-material');
@@ -330,15 +342,29 @@ function updateCustomItemColorOptions(rowId) {
     const colorOptions = materials[customItemMaterial].Colors;
 
     for (const colorOptionName of Object.keys(colorOptions)) {
-        const colorHex = colorOptions[colorOptionName];
+        if (await doesFilamentIconExist(customItemMaterial, colorOptionName)) {
+            createElement('option', customItemColorSelection, {
+                InnerHTML: customItemColorImageOption,
+                Value: colorOptionName
+            }, {
+                'COLOR_NAME': colorOptionName,
+                'IMAGE_PATH': `/images/filamentIcons/${customItemMaterial}/${colorOptionName}.webp`
+            });
+        } else {
+            const colorHex = colorOptions[colorOptionName];
 
-        createElement('option', customItemColorSelection, {
-            InnerHTML: customItemColorOption,
-            Value: colorOptionName
-        }, {
-            'COLOR_HEX': colorHex,
-            'COLOR_NAME': colorOptionName
-        });
+            createElement('option', customItemColorSelection, {
+                InnerHTML: customItemColorOption,
+                Value: colorOptionName
+            }, {
+                'COLOR_HEX': colorHex,
+                'COLOR_NAME': colorOptionName
+            });
+        }
+    }
+
+    if (Object.keys(colorOptions).length == 1) {
+        customItemColorSelection.value = Object.keys(colorOptions)[0];
     }
 }
 
@@ -375,11 +401,13 @@ async function updateExistingItemsTotalPrice() {
 
     const existingItemsTotalPriceContainer = getElement('existingItemsTotalPriceContainer');
     const existingItemsTotalPriceText = getElement('existingItemsTotalPriceText');
-    
-    existingItemsTotalPriceText.innerHTML = '0.00';
-    existingItemsTotalPriceContainer.style.display = 'none';
 
-    if (existingItemRows.length <= 0) return;
+    if (existingItemRows.length <= 0) {
+        existingItemsTotalPriceText.innerHTML = '0.00';
+        existingItemsTotalPriceContainer.style.display = 'none';
+
+        return;
+    }
 
     let existingItemsData = [];
 
@@ -402,6 +430,9 @@ async function updateExistingItemsTotalPrice() {
     if (isFinite(Number(existingItemsTotalPrice)) && existingItemsTotalPrice != '0.00') {
         existingItemsTotalPriceText.innerHTML = existingItemsTotalPrice;
         existingItemsTotalPriceContainer.style.display = 'block';
+    } else {
+        existingItemsTotalPriceText.innerHTML = '0.00';
+        existingItemsTotalPriceContainer.style.display = 'none';
     }
 }
 
