@@ -1,57 +1,70 @@
-export async function processResponse(response) {
-    if (response.redirected) {
-        window.location.href = response.url;
-        return response.url;
+(function () {
+    function getBaseUrl() {
+        return window.location.origin || (window.location.protocol + '//' + window.location.host);
     }
-    if (response.headers.get('content-type').includes('application/json')) {
-        return response.json();
-    } else {
+
+    async function processResponse(response) {
+        if (response.redirected) {
+            window.location.href = response.url;
+            return response.url;
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+
+        if (contentType.includes('application/json')) {
+            return response.json();
+        }
+
         return response.text();
     }
-}
 
-export async function getFromServer(address) {
-    const response = await fetch(`${window.location.origin}/api/${address}`, {
-        method: 'GET'
-    });
+    async function getFromServer(address) {
+        const response = await fetch(getBaseUrl() + '/api/' + address, {
+            method: 'GET'
+        });
 
-    return await processResponse(response);
-}
+        return processResponse(response);
+    }
 
-export async function postToServer(address, data) {
-    const response = await fetch(`${window.location.origin}/api/${address}`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-            'Content-Type': 'application/json; charset=UTF-8'
-        }
-    });
+    async function postToServer(address, data) {
+        const response = await fetch(getBaseUrl() + '/api/' + address, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json; charset=UTF-8'
+            }
+        });
 
-    return await processResponse(response);
-}
+        return processResponse(response);
+    }
 
-export async function getFileFromServer(address) {
-    const response = await fetch(`${window.location.origin}/${address}`, {
-        method: 'GET'
-    });
+    async function getFileFromServer(address) {
+        const response = await fetch(getBaseUrl() + '/' + address, {
+            method: 'GET'
+        });
 
-    return await processResponse(response);
-}
+        return processResponse(response);
+    }
 
-export async function getPageFromServer(page) {
-    const response = await getFileFromServer(`pages/${page}`);
+    async function getPageFromServer(page) {
+        return getFileFromServer('pages/' + page);
+    }
 
-    return response;
-}
+    async function getTemplateFromServer(template) {
+        return getFileFromServer('templates/' + template);
+    }
 
-export async function getTemplateFromServer(template) {
-    const response = await getFileFromServer(`templates/${template}`);
+    async function doesFilamentIconExist(material, color) {
+        return (await getFromServer('doesFilamentIconExist/' + material + '/' + color)) === 'true';
+    }
 
-    return response;
-}
-
-export async function doesFilamentIconExist(material, color) {
-    return (await getFromServer(`doesFilamentIconExist/${material}/${color}`)) == 'true';
-}
-
-//export { getFromServer, postToServer, getFileFromServer, getPageFromServer, getTemplateFromServer };
+    window.network = {
+        processResponse,
+        getFromServer,
+        postToServer,
+        getFileFromServer,
+        getPageFromServer,
+        getTemplateFromServer,
+        doesFilamentIconExist
+    };
+})();

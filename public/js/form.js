@@ -1,20 +1,31 @@
-import { getFromServer, postToServer, getFileFromServer, getPageFromServer, getTemplateFromServer, doesFilamentIconExist } from './network.js';
+const { getFromServer, postToServer, getFileFromServer, getPageFromServer, getTemplateFromServer, doesFilamentIconExist } = window.network;
 
-const materials = await getFromServer('materials');
-const existingItems = await getFromServer('items');
+let materials;
+let existingItems;
 
-const existingItemRow = await getTemplateFromServer('existingItemRow');
-const customItemRow = await getTemplateFromServer('customItemRow');
+let existingItemRow;
+let customItemRow;
 
-const existingItemColorOption = await getTemplateFromServer('existingItemColorOption');
-const existingItemColorImageOption = await getTemplateFromServer('existingItemColorImageOption');
-const customItemColorOption = await getTemplateFromServer('customItemColorOption');
-const customItemColorImageOption = await getTemplateFromServer('existingItemColorImageOption');
+let existingItemColorOption;
+let existingItemColorImageOption;
+let customItemColorOption;
+let customItemColorImageOption;
 
 let existingItemsCount = 0;
 let customItemsCount = 0;
 
-function setup() {
+async function setup() {
+    materials = await getFromServer('materials');
+    existingItems = await getFromServer('items');
+
+    existingItemRow = await getTemplateFromServer('existingItemRow');
+    customItemRow = await getTemplateFromServer('customItemRow');
+
+    existingItemColorOption = await getTemplateFromServer('existingItemColorOption');
+    existingItemColorImageOption = await getTemplateFromServer('existingItemColorImageOption');
+    customItemColorOption = await getTemplateFromServer('customItemColorOption');
+    customItemColorImageOption = await getTemplateFromServer('existingItemColorImageOption');
+
     addExistingItemRow();
     addCustomItemRow();
 
