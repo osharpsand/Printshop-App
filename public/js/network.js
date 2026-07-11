@@ -1,26 +1,33 @@
-(function() {
+(function () {
+    function getBaseUrl() {
+        return window.location.origin || (window.location.protocol + '//' + window.location.host);
+    }
+
     async function processResponse(response) {
         if (response.redirected) {
             window.location.href = response.url;
             return response.url;
         }
-        if (response.headers.get('content-type').includes('application/json')) {
+
+        const contentType = response.headers.get('content-type') || '';
+
+        if (contentType.includes('application/json')) {
             return response.json();
-        } else {
-            return response.text();
         }
+
+        return response.text();
     }
 
     async function getFromServer(address) {
-        const response = await fetch(`${window.location.origin}/api/${address}`, {
+        const response = await fetch(getBaseUrl() + '/api/' + address, {
             method: 'GET'
         });
 
-        return await processResponse(response);
+        return processResponse(response);
     }
 
     async function postToServer(address, data) {
-        const response = await fetch(`${window.location.origin}/api/${address}`, {
+        const response = await fetch(getBaseUrl() + '/api/' + address, {
             method: 'POST',
             body: JSON.stringify(data),
             headers: {
@@ -28,31 +35,27 @@
             }
         });
 
-        return await processResponse(response);
+        return processResponse(response);
     }
 
     async function getFileFromServer(address) {
-        const response = await fetch(`${window.location.origin}/${address}`, {
+        const response = await fetch(getBaseUrl() + '/' + address, {
             method: 'GET'
         });
 
-        return await processResponse(response);
+        return processResponse(response);
     }
 
     async function getPageFromServer(page) {
-        const response = await getFileFromServer(`pages/${page}`);
-
-        return response;
+        return getFileFromServer('pages/' + page);
     }
 
     async function getTemplateFromServer(template) {
-        const response = await getFileFromServer(`templates/${template}`);
-
-        return response;
+        return getFileFromServer('templates/' + template);
     }
 
     async function doesFilamentIconExist(material, color) {
-        return (await getFromServer(`doesFilamentIconExist/${material}/${color}`)) == 'true';
+        return (await getFromServer('doesFilamentIconExist/' + material + '/' + color)) === 'true';
     }
 
     window.network = {
@@ -63,5 +66,5 @@
         getPageFromServer,
         getTemplateFromServer,
         doesFilamentIconExist
-    }
+    };
 })();
