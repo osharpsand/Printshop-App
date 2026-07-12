@@ -509,13 +509,9 @@ app.get('/pages/orders', redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('orders'));
 });
 
-app.get('/pages/orders/:id/view', redirectToLoginIfNotAuthenticated, (req, res) => {
-    res.sendFile(getPageDirectory('view-order'));
-})
-
-app.get('/pages/orders/:id/edit', redirectToLoginIfNotAuthenticated, (req, res) => {
-    res.sendFile(getPageDirectory('edit-order'));
-})
+app.get('/pages/orders/:id', redirectToLoginIfNotAuthenticated, (req, res) => {
+    res.sendFile(getPageDirectory('order'));
+});
 
 app.get('/images/filamentIcons/:material/:color.webp', (req, res) => {
     const material = req.params.material;

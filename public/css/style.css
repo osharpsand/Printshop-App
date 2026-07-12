@@ -82,7 +82,62 @@ form {
     margin-bottom: 15px;
 }
 
-input, textarea, select {
+.login-container {
+    width: 350px;
+}
+
+.login-container div {
+    padding: 8px 0;
+}
+
+.password-field {
+    position: relative;
+}
+
+.password-field input {
+    width: 100%;
+    padding-right: 44px;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #666;
+}
+
+.password-toggle:active {
+    transform: translateY(-50%);
+}
+
+.password-toggle img {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+.password-toggle:hover,
+.password-toggle:focus {
+    color: #000;
+}
+
+.password-toggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.35);
+}
+
+input, textarea, select, button {
     padding: 12px;
     min-height: 54px;
     border: 1px solid #ddd;
@@ -90,12 +145,20 @@ input, textarea, select {
     font-size: 14px;
     font-family: Arial, sans-serif;
     font-weight: 400;
+    width: 100%;
 }
 
 input:focus, textarea:focus, select:focus {
     outline: none;
     border-color: #4CAF50;
     box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+.password-toggle {
+    width: 34px !important;
+    height: 34px !important;
+    min-height: 0 !important;
+    padding: 0 !important;
 }
 
 .custom-select {
