@@ -4,12 +4,12 @@ const loginForm = document.getElementById('loginForm');
 
 const usernameInput = document.getElementById('usernameInput');
 const passwordInput = document.getElementById('passwordInput');
-const togglePasswordVisibility = document.getElementById('togglePasswordVisibility');
+//const togglePasswordVisibility = document.getElementById('togglePasswordVisibility');
 
 const errorMessage = document.getElementById('errorMessage');
-const togglePasswordVisibilityIcon = togglePasswordVisibility.querySelector('img');
+//const togglePasswordVisibilityIcon = togglePasswordVisibility.querySelector('img');
 
-togglePasswordVisibility.addEventListener('click', () => {
+/*togglePasswordVisibility.addEventListener('click', () => {
     const isPasswordVisible = passwordInput.type === 'text';
     passwordInput.type = isPasswordVisible ? 'password' : 'text';
     togglePasswordVisibility.setAttribute('aria-label', isPasswordVisible ? 'Show password' : 'Hide password');
@@ -19,7 +19,7 @@ togglePasswordVisibility.addEventListener('click', () => {
             ? '/images/menuIcons/eye.svg'
             : '/images/menuIcons/eye-slash.svg';
     }
-});
+});*/
 
 loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
