@@ -1,0 +1,22 @@
+services:
+  printshop:
+    build: .
+    image: osharpsand/printshop-app:latest
+
+    restart: unless-stopped
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      - PORT=3000
+      - PRODUCTION=true
+      - DOMAIN=printshop.example.com
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=admin
+    
+    
+    volumes:
+      - ./config:/app/config
+      - ./orders:/app/orders
+      - ./sessions:/app/sessions

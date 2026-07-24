@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const fs = require('fs');
 
-const credentialsFile = path.join(__dirname, 'credentials.json');
+const credentialsFile = path.join(__dirname, 'config', 'credentials.json');
 
 const readlineInterface = readline.createInterface({
     input: process.stdin,

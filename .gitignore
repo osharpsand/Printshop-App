@@ -1,14 +1,13 @@
-#Ignore .vscode Files
-/.vscode
-
-#Ignore Private Folders
-/cert
-/orders
-/sessions
+#Ignore Private Folders Contents
+/cert/*
+/orders/*
+/sessions/*
 
 #Ignore Because It Contains Secrets
-/.env
-/credentials.json
+/config/*
 
 #Ignore node_modules Because They Will Get Rebuilt And Uses Lots Of Space
 /node_modules
+
+#Allow Files With .gitkeep To Exist
+!.gitkeep

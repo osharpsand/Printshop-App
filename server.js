@@ -10,20 +10,28 @@ const fs = require('fs');
 
 const FileStore = require('session-file-store')(expressSession);
 
-process.loadEnvFile();
+const envFile = path.join(__dirname, 'config', '.env');
+
+try {
+    process.loadEnvFile(envFile);
+} catch (Error) {
+    if (process.env.PRODUCTION != 'true') {
+        console.error('The .env File Failed To Load');
+        process.exit(1);
+    }
+}
 
 const port = process.env.PORT || 3000;
-const secret = process.env.SECRET;
 const production = process.env.PRODUCTION == 'true';
-const domain = production ? process.env.URL : ('localhost:' + port);
+const secret = process.env.SECRET || crypto.randomBytes(32).toString('hex');
+const domain = production ? process.env.DOMAIN : ('localhost:' + port);
 
 const app = express();
 
-const credentialsFile = path.join(__dirname, 'credentials.json');
+const credentialsFile = path.join(__dirname, 'config', 'credentials.json');
 const itemsFile = path.join(__dirname, 'items.json');
 const materialsFile = path.join(__dirname, 'materials.json');
 
-const credentials = readJson(credentialsFile, true);
 const items = readJson(itemsFile, true);
 const materials = readJson(materialsFile, true);
 
@@ -31,6 +39,24 @@ const pagesDirectory = path.join(__dirname, 'public', 'pages');
 const ordersDirectory = path.join(__dirname, 'orders');
 
 const filamentIconsDirectory = path.join(__dirname, 'public', 'images', 'filamentIcons');
+
+fs.writeFileSync(envFile, `PORT=${port}\nPRODUCTION=${production}\nSECRET=${secret}\nDOMAIN=${domain}`);
+
+if (production && !fs.existsSync(credentialsFile)) {
+    if (!process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD == '') {
+        console.error('ADMIN_PASSWORD Must Be Set On First Launch');
+        process.exit(1);
+    }
+
+    const credentials = {
+        Username: process.env.ADMIN_USERNAME || 'admin',
+        PasswordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD, 12)
+    };
+
+    fs.writeFileSync(credentialsFile, JSON.stringify(credentials, null, 2));
+}
+
+const credentials = readJson(credentialsFile, true);
 
 //Functions
 
@@ -258,7 +284,9 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(expressSession({
-    store: new FileStore(),
+    store: new FileStore({
+        path: "./sessions"
+    }),
     secret: secret,
     resave: false,
     saveUninitialized: false,
