@@ -71,7 +71,6 @@
         getFileFromServer,
         getPageFromServer,
         getTemplateFromServer,
-        //doesFilamentIconExist
         whatColorsHaveFilamentIcons
     };
 })();

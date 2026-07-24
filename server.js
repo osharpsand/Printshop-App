@@ -515,18 +515,6 @@ app.post('/api/finishOrder', requireAuthentication, async (req, res) => {
     }
 });
 
-/* No Longer In Use:
-app.get('/api/doesFilamentIconExist/:material/:color', async (req, res) => {
-    const material = req.params.material;
-    const color = req.params.color;
-
-    const iconPath = path.join(filamentIconsDirectory, material, `${color}.webp`);
-
-    res.setHeader('Content-Type', 'text/plain');
-    res.send(fs.existsSync(iconPath) ? true : false);
-})
-*/
-
 app.get('/api/whatColorsHaveFilamentIcons/:material', (req, res) => {
     const material = req.params.material;
 
