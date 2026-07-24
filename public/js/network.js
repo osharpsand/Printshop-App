@@ -54,8 +54,14 @@
         return getFileFromServer('templates/' + template);
     }
 
+    /* No Longer In Use:
     async function doesFilamentIconExist(material, color) {
         return (await getFromServer('doesFilamentIconExist/' + material + '/' + color)) === 'true';
+    }
+    */
+
+    async function whatColorsHaveFilamentIcons(material) {
+        return await getFromServer('whatColorsHaveFilamentIcons/' + material);
     }
 
     window.network = {
@@ -65,6 +71,7 @@
         getFileFromServer,
         getPageFromServer,
         getTemplateFromServer,
-        doesFilamentIconExist
+        //doesFilamentIconExist
+        whatColorsHaveFilamentIcons
     };
 })();

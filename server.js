@@ -515,7 +515,8 @@ app.post('/api/finishOrder', requireAuthentication, async (req, res) => {
     }
 });
 
-app.get('/api/doesFilamentIconExist/:material/:color', (req, res) => {
+/* No Longer In Use:
+app.get('/api/doesFilamentIconExist/:material/:color', async (req, res) => {
     const material = req.params.material;
     const color = req.params.color;
 
@@ -523,7 +524,18 @@ app.get('/api/doesFilamentIconExist/:material/:color', (req, res) => {
 
     res.setHeader('Content-Type', 'text/plain');
     res.send(fs.existsSync(iconPath) ? true : false);
-});
+})
+*/
+
+app.get('/api/whatColorsHaveFilamentIcons/:material', (req, res) => {
+    const material = req.params.material;
+
+    const filamentIconsPath = path.join(filamentIconsDirectory, material);
+
+    const colorsWtihFilamentIcons = fs.readdirSync(filamentIconsPath).map(color => { return color.endsWith('.webp') ? color.slice(0, -5) : color});
+
+    res.json(colorsWtihFilamentIcons);
+})
 
 app.get('/pages/login', (req, res) => {
     if (req.session.isAuthenticated) {
@@ -541,7 +553,7 @@ app.get('/pages/orders/:id', redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('order'));
 });
 
-app.get('/images/filamentIcons/:material/:color.webp', (req, res) => {
+app.get('/images/filamentIcons/:material/:color.webp', async (req, res) => {
     const material = req.params.material;
     const color = req.params.color;
 

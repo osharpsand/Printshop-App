@@ -1,4 +1,4 @@
-const { getFromServer, postToServer, getFileFromServer, getPageFromServer, getTemplateFromServer, doesFilamentIconExist } = window.network;
+const { getFromServer, postToServer, getFileFromServer, getPageFromServer, getTemplateFromServer, whatColorsHaveFilamentIcons } = window.network;
 
 let materials;
 let existingItems;
@@ -192,9 +192,10 @@ async function updateExistingItemColorOptions(rowId) {
     if (!materials.hasOwnProperty(existingItemMaterial)) return;
 
     const colorOptions = materials[existingItemMaterial].Colors;
+    const colorsWithFilamentIcons = await whatColorsHaveFilamentIcons(existingItemMaterial);
 
     for (const colorOptionName of Object.keys(colorOptions)) {
-        if (await doesFilamentIconExist(existingItemMaterial, colorOptionName)) {
+        if (colorsWithFilamentIcons.includes(colorOptionName)) {
             createElement('option', existingItemColorSelection, {
                 InnerHTML: existingItemColorImageOption,
                 Value: colorOptionName
@@ -351,9 +352,10 @@ async function updateCustomItemColorOptions(rowId) {
     if (!materials.hasOwnProperty(customItemMaterial)) return;
 
     const colorOptions = materials[customItemMaterial].Colors;
+    const colorsWithFilamentIcons = await whatColorsHaveFilamentIcons(customItemMaterial);
 
     for (const colorOptionName of Object.keys(colorOptions)) {
-        if (await doesFilamentIconExist(customItemMaterial, colorOptionName)) {
+        if (colorsWithFilamentIcons.includes(colorOptionName)) {
             createElement('option', customItemColorSelection, {
                 InnerHTML: customItemColorImageOption,
                 Value: colorOptionName
