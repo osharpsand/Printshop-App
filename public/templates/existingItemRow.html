@@ -1,23 +1,25 @@
-<div class="form-group">
+<div class="existing-item-row-form-group">
     <label for="existingItemName-{{ROW_ID}}">Product</label>
     <select id="existingItemName-{{ROW_ID}}" class="existing-item-name enhanced-select">
         <option value="">Select Product</option>
     </select>
 </div>
-<div class="form-group">
+<div class="existing-item-row-form-group">
     <label for="existingItemMaterial-{{ROW_ID}}">Material</label>
     <select id="existingItemMaterial-{{ROW_ID}}" class="existing-item-material enhanced-select">
         <option value="">Select Material</option>
     </select>
 </div>
-<div class="form-group">
+<div class="existing-item-row-form-group">
     <label for="existingItemColor-{{ROW_ID}}">Color</label>
     <select id="existingItemColor-{{ROW_ID}}" class="existing-item-color enhanced-select">
         <option value="">Select Color</option>
     </select>
 </div>
-<div class="form-group">
+<div class="existing-item-row-form-group">
     <label for="existingItemQuantity-{{ROW_ID}}">Quantity</label>
     <input type="number" id="existingItemQuantity-{{ROW_ID}}" class="existing-item-quantity" value="1" min="1" max="100">
 </div>
-<button type="button" id="existing-item-remove-btn-{{ROW_ID}}" class="danger-btn remove-existing-item" style="display: none;">Remove</button>
+<button type="button" id="existingItemRemoveButton-{{ROW_ID}}" class="danger-button existing-item-remove-button" style="display: none;">
+    <img src="/images/menuIcons/xmark.svg" id="existingItemRemoveImage" class="existing-item-remove-image" alt="remove">
+</button>

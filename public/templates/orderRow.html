@@ -1,4 +1,22 @@
-<div id="orderNameContainer-{{ORDER_ID}}" class="order-name-container">
+<div id="orderNameContainer-{{ORDER_ID}}" class="order-name-container order-row-group">
     <label for="orderName-{{ORDER_ID}}" class="order-name-label">Name</label>
-    <p id="orderName-{{ORDER_ID}}" class="order-name">{{ORDER_ID}}</p>
+    <p id="orderName-{{ORDER_ID}}" class="order-name">{{ORDER_NAME}}</p>
 </div>
+<div id="orderTimePlacedContainer-{{ORDER_ID}}" class="order-time-placed-container order-row-group">
+    <label for="orderTimePlacedContainer-{{ORDER_ID}}" class="order-time-placed-label">Time Placed</label>
+    <p id="orderTime-{{ORDER_ID}}" class="order-time">{{ORDER_TIME}}</p>
+</div>
+<div id="orderContactContainer-{{ORDER_ID}}" class="order-contact-container order-row-group">
+    <label for="orderContact-{{ORDER_ID}}" class="order-contact-label">Contact</label>
+    <p id="orderContact-{{ORDER_ID}}" class="order-contact">{{ORDER_CONTACT}}</p>
+</div>
+<div id="orderPriceContainer-{{ORDER_ID}}" class="order-price-container order-row-group">
+    <label for="orderPrice-{{ORDER_ID}}" class="order-price-label">Price</label>
+    <p id="orderPrice-{{ORDER_ID}}" class="order-price">{{ORDER_PRICE}}</p>
+</div>
+<button id="orderCompleteButton-{{ORDER_ID}}" class="order-complete-button">
+    <img src="/images/menuIcons/check.svg" id="orderCompleteImage-{{ROW_ID}}" class="order-complete-image" alt="Complete Order">
+</button>
+<a href="/pages/order/{{ORDER_ID}}" target="_self" id="orderSelectButton-{{ORDER_ID}}" class="order-select-button">
+    <img src="/images/menuIcons/arrow-right.svg" id="orderSelectImage-{{ROW_ID}}" class="order-select-image" alt="Complete">
+</a>

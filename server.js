@@ -15,14 +15,12 @@ const envFile = path.join(__dirname, 'config', '.env');
 try {
     process.loadEnvFile(envFile);
 } catch (Error) {
-    if (process.env.PRODUCTION != 'true') {
-        console.error('The .env File Failed To Load');
-        process.exit(1);
-    }
+    console.error('The .env File Failed To Load, Using Defaults.');
 }
 
 const port = process.env.PORT || 3000;
-const production = process.env.PRODUCTION == 'true';
+const production = process.env.PRODUCTION == 'true' || false;
+const reverseProxy = process.env.REVERSE_PROXY || production;
 const secret = process.env.SECRET || crypto.randomBytes(32).toString('hex');
 const domain = production ? process.env.DOMAIN : ('localhost:' + port);
 
@@ -40,17 +38,12 @@ const ordersDirectory = path.join(__dirname, 'orders');
 
 const filamentIconsDirectory = path.join(__dirname, 'public', 'images', 'filamentIcons');
 
-fs.writeFileSync(envFile, `PORT=${port}\nPRODUCTION=${production}\nSECRET=${secret}\nDOMAIN=${domain}`);
+fs.writeFileSync(envFile, `PORT=${port}\nPRODUCTION=${production}\nREVERSE_PROXY=${reverseProxy}\nSECRET=${secret}\nDOMAIN=${domain}`);
 
-if (production && !fs.existsSync(credentialsFile)) {
-    if (!process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD == '') {
-        console.error('ADMIN_PASSWORD Must Be Set On First Launch');
-        process.exit(1);
-    }
-
+if (!fs.existsSync(credentialsFile)) {
     const credentials = {
         Username: process.env.ADMIN_USERNAME || 'admin',
-        PasswordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD, 12)
+        PasswordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin', 12)
     };
 
     fs.writeFileSync(credentialsFile, JSON.stringify(credentials, null, 2));
@@ -213,13 +206,13 @@ function submitOrder(order) {
 
 function getOrders() {
     const orderFilenames = fs.readdirSync(ordersDirectory);
-    let formattedOrders = {};
+    let formattedOrders = [];
 
     for (const orderFilename of orderFilenames) {
+        if (orderFilename == '.gitkeep') continue;
         const order = readJson(getOrderPath(orderFilename));
-        const orderId = order.TimePlaced;
 
-        formattedOrders[orderId] = order;
+        formattedOrders.push(order);
     }
 
     return formattedOrders;
@@ -239,7 +232,7 @@ function editOrder(editedOrder) {
 }
 
 function finishOrder(orderId) {
-    const orderPath = getOrderPath(orderId);
+    const orderPath = getOrderPath(orderId.toString());
 
     fs.unlinkSync(orderPath);
 }
@@ -278,7 +271,7 @@ function redirectToLoginIfNotAuthenticated(req, res, next) {
 
 //Network
 
-app.set('trust proxy', production);
+app.set('trust proxy', reverseProxy);
 
 app.use(helmet());
 app.use(express.json());
@@ -290,7 +283,7 @@ app.use(expressSession({
     secret: secret,
     resave: false,
     saveUninitialized: false,
-    proxy: production,
+    proxy: reverseProxy,
     name: 'printshop.sid',
     cookie:  {
         maxAge: 1000 * 60 * 60 * 24,
@@ -520,6 +513,11 @@ app.get('/api/whatColorsHaveFilamentIcons/:material', (req, res) => {
 
     const filamentIconsPath = path.join(filamentIconsDirectory, material);
 
+    if (!fs.existsSync(filamentIconsPath)) {
+        res.json([]);
+        return;
+    }
+
     const colorsWtihFilamentIcons = fs.readdirSync(filamentIconsPath).map(color => { return color.endsWith('.webp') ? color.slice(0, -5) : color});
 
     res.json(colorsWtihFilamentIcons);
@@ -537,7 +535,7 @@ app.get('/pages/orders', redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('orders'));
 });
 
-app.get('/pages/orders/:id', redirectToLoginIfNotAuthenticated, (req, res) => {
+app.get('/pages/order/:id', redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('order'));
 });
 
@@ -556,14 +554,22 @@ app.use(express.static('public', {
     extensions: ['html']
 }));
 
-if (production) {
+if (reverseProxy) {
     app.listen(port, () => {
         console.log(`Server Running On Port ${port}!`);
     });
 } else {
+    const keyFile = path.join(__dirname, 'cert', 'key.pem');
+    const certFile = path.join(__dirname, 'cert', 'cert.pem');
+
+    if (!fs.existsSync(keyFile) || !fs.existsSync(certFile)) {
+        console.error('A key.pem and cert.pem file must be in the cert directory to start the server without a reverse proxy!');
+        process.exit(1);
+    }
+
     const sslOptions = {
-        key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
-        cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
+        key: fs.readFileSync(keyFile),
+        cert: fs.readFileSync(certFile),
     };
 
     https.createServer(sslOptions, app).listen(port, () => {

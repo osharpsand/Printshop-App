@@ -8,10 +8,21 @@
         <div class="container">
             <h1>Ollie's Custom 3D Prints Orders</h1>
 
+            <h2 id="ordersCountDisplay">No Orders Yet!</h2>
+
             <div id="ordersContainer" class="orders-container"></div>
+            <div id="ordersActionButtons" class="ordersActionButtons">
+                <button id="ordersRefreshButton" class="orders-refresh-button secondary-button">
+                    <img src="/images/menuIcons/refresh.svg" id="ordersRefreshImage" class="orders-refresh-image" alt="Refresh">
+                </button>
+                <button id="ordersLogoutButton" class="orders-logout-button danger-button">
+                    <img src="/images/menuIcons/logout.svg" id="ordersLogoutImage" class="orders-logout-image" alt="logout">
+                </button>
+            </div>
         </div>
 
         <script src="/js/network.js"></script>
+        <script src="/js/footer.js"></script>
         <script src="/js/orders.js"></script>
     </body>
 </html>

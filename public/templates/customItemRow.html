@@ -1,21 +1,23 @@
-<div class="form-group">
+<div class="custom-item-row-form-group">
     <label for="customItemLink-{{ROW_ID}}">File Link</label>
     <input type="text" id="customItemLink-{{ROW_ID}}" class="custom-item-link" placeholder="https://example.com">
 </div>
-<div class="form-group">
+<div class="custom-item-row-form-group">
     <label for="customItemMaterial-{{ROW_ID}}">Material</label>
     <select id="customItemMaterial-{{ROW_ID}}" class="custom-item-material enhanced-select">
         <option value="">Select Material</option>
     </select>
 </div>
-<div class="form-group">
+<div class="custom-item-row-form-group">
     <label for="customItemColor-{{ROW_ID}}">Color</label>
     <select id="customItemColor-{{ROW_ID}}" class="custom-item-color enhanced-select">
         <option value="">Select Color</option>
     </select>
 </div>
-<div class="form-group">
+<div class="custom-item-row-form-group">
     <label for="customItemQuantity-{{ROW_ID}}">Quantity</label>
-    <input type="number" id="customItemQuantity-{{ROW_ID}}" class="custom-item-quantity" value="1", min="1", max="100">
+    <input type="number" id="customItemQuantity-{{ROW_ID}}" class="custom-item-quantity" value="1" min="1" max="100">
 </div>
-<button type="button" id="custom-item-remove-btn" class="danger-btn remove-custom-item" style="display: none;">Remove</button>
+<button type="button" id="customItemRemoveButton-{{ROW_ID}}" class="danger-button custom-item-remove-button" style="display: none;">
+    <img src="/images/menuIcons/xmark.svg" id="customItemRemoveImage-{{ROW_ID}}" class="custom-item-remove-image" alt="Remove">
+</button>

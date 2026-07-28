@@ -1,4 +1,4 @@
-const { getFromServer, postToServer, getFileFromServer, getPageFromServer, getTemplateFromServer, whatColorsHaveFilamentIcons } = window.network;
+//const { getFromServer, postToServer, getFileFromServer, getPageFromServer, getTemplateFromServer, whatColorsHaveFilamentIcons } = window.network;
 
 let materials;
 let existingItems;
@@ -117,7 +117,7 @@ function addExistingItemRow() {
     }
 
     const newExistingItemQuantitySelection = newExistingItemRow.querySelector('.existing-item-quantity');
-    const newExistingItemRemoveBtn = newExistingItemRow.querySelector('.remove-existing-item');
+    const newExistingItemRemoveBtn = newExistingItemRow.querySelector('.existing-item-remove-button');
 
     newExistingItemNameSelection.addEventListener('change', () => {
         updateExistingItemMaterialOptions(rowId);
@@ -223,7 +223,7 @@ async function updateExistingItemColorOptions(rowId) {
 
 function updateExistingItemRemoveBtn(rowId) {
     const existingItemRow = getExistingItemRow(rowId);
-    const existingItemRemoveBtn = existingItemRow.querySelector('.danger-btn');
+    const existingItemRemoveBtn = existingItemRow.querySelector('.existing-item-remove-button');
     
     existingItemRemoveBtn.style.display = isExistingItemRowEmpty(rowId) ? 'none' : 'block';
 }
@@ -311,7 +311,7 @@ function addCustomItemRow() {
 
     const newCustomItemLinkSelection = newCustomItemRow.querySelector('.custom-item-link');
     const newCustomItemQuantitySelection = newCustomItemRow.querySelector('.custom-item-quantity');
-    const newCustomItemRemoveBtn = newCustomItemRow.querySelector('.remove-custom-item');
+    const newCustomItemRemoveBtn = newCustomItemRow.querySelector('.custom-item-remove-button');
 
     newCustomItemLinkSelection.addEventListener('input', () => {
         updateCustomItemRemoveBtn(rowId);
@@ -383,7 +383,7 @@ async function updateCustomItemColorOptions(rowId) {
 
 function updateCustomItemRemoveBtn(rowId) {
     const customItemRow = getCustomItemRow(rowId);
-    const customItemRemoveBtn = customItemRow.querySelector('.remove-custom-item');
+    const customItemRemoveBtn = customItemRow.querySelector('.custom-item-remove-button');
 
     customItemRemoveBtn.style.display = isCustomItemRowEmpty(rowId) ? 'none' : 'block';
 }
