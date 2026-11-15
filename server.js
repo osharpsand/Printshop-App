@@ -254,6 +254,12 @@ const filamentIconRateLimit = expressRateLimit({
     windowMs: 15 * 60 * 1000,
     max: 250,
     message: 'Too Many Reqests, Please Try Again Later'
+});
+
+const loadOrderRateLimit = expressRateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too Many Requests, Please Try Again Later'
 })
 
 function requireAuthentication(req, res, next) {
@@ -540,7 +546,7 @@ app.get('/pages/orders', redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('orders'));
 });
 
-app.get('/pages/order/:id', redirectToLoginIfNotAuthenticated, (req, res) => {
+app.get('/pages/order/:id', loadOrderRateLimit, redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('order'));
 });
 
