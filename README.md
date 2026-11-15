@@ -28,18 +28,8 @@ A simple application for myself to submit and manage print orders.
 
 ### Run
 
-#### Development
 ```bash
 pnpm start
-```
-
-#### Production
-```bash
-./start.sh
-```
-Or
-```bash
-sudo systemctl start printshop-app
 ```
 
 ## Project Structure
