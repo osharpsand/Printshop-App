@@ -1,10 +1,12 @@
 const expressRateLimit = require('express-rate-limit');
 const expressSession = require('express-session');
+const cookieParser = require('cookie-parser');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const helmet = require('helmet');
 const crypto = require('crypto');
 const https = require('https');
+const lusca = require('lusca');
 const path = require('path');
 const fs = require('fs');
 
@@ -327,6 +329,7 @@ app.use(expressSession({
         sameSite: 'lax'
     }
 }));
+app.use(lusca.csrf());
 app.use((req, res, next) => {
     const decodedPath = decodeURIComponent(req.path || '');
 
