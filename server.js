@@ -268,6 +268,12 @@ const loadOrdersRateLimit = expressRateLimit({
     message: 'Too Many Requests, Please Try Again Later'
 });
 
+const loadLoginPageRateLimit = expressRateLimit({
+    windowMs: 15 * 60 * 100,
+    max: 10,
+    message: 'Too Many Requests, Please Try Again Later'
+});
+
 function requireAuthentication(req, res, next) {
     if (req.session.isAuthenticated) {
         next();
@@ -540,7 +546,7 @@ app.get('/api/whatColorsHaveFilamentIcons/:material', (req, res) => {
     res.json(colorsWtihFilamentIcons);
 })
 
-app.get('/pages/login', (req, res) => {
+app.get('/pages/login', loadLoginPageRateLimit, (req, res) => {
     if (req.session.isAuthenticated) {
         res.redirect(303, getPageUrl('orders'));
     } else {
