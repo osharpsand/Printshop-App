@@ -585,7 +585,14 @@ app.get('/images/filamentIcons/:material/:color.webp', filamentIconRateLimit, as
     const material = req.params.material;
     const color = req.params.color;
 
-    const iconPath = path.join(filamentIconsDirectory, material, `${color}.webp`);
+    const iconsBasePath = path.resolve(filamentIconsDirectory);
+    const iconPath = path.resolve(iconsBasePath, material, `${color}.webp`);
+    const relativeIconPath = path.relative(iconsBasePath, iconPath);
+
+    if (relativeIconPath.startsWith('..') || path.isAbsolute(relativeIconPath)) {
+        res.sendStatus(404);
+        return;
+    }
 
     if (fs.existsSync(iconPath)) {
         res.sendFile(iconPath);
