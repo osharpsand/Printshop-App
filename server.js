@@ -250,6 +250,12 @@ const loginRateLimit = expressRateLimit({
     message: 'Too Many Requests, Please Try Again Later'
 });
 
+const filamentIconRateLimit = expressRateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 250,
+    message: 'Too Many Reqests, Please Try Again Later'
+})
+
 function requireAuthentication(req, res, next) {
     if (req.session.isAuthenticated) {
         next();
@@ -538,7 +544,7 @@ app.get('/pages/order/:id', redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('order'));
 });
 
-app.get('/images/filamentIcons/:material/:color.webp', async (req, res) => {
+app.get('/images/filamentIcons/:material/:color.webp', filamentIconRateLimit, async (req, res) => {
     const material = req.params.material;
     const color = req.params.color;
 
