@@ -280,6 +280,12 @@ const getFilamentsWithIconsRateLimit = expressRateLimit({
     message: 'Too Many Requests, Please Try Again Later'
 });
 
+const editOrderRateLimit = expressRateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 25,
+    message: 'Too Many Requests, Please Try Again Later'
+});
+
 function requireAuthentication(req, res, next) {
     if (req.session.isAuthenticated) {
         next();
@@ -504,7 +510,7 @@ app.get('/api/getOrders', requireAuthentication, async (req, res) => {
     }
 });
 
-app.post('/api/editOrder', requireAuthentication, async (req, res) => {
+app.post('/api/editOrder', editOrderRateLimit, requireAuthentication, async (req, res) => {
     try {
         const editedOrder = req.body;
 
