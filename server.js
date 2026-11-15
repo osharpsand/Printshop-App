@@ -324,7 +324,14 @@ app.use(expressSession({
 app.use((req, res, next) => {
   if (req.path.endsWith('.html')) {
     const cleanPath = req.path.slice(0, -5);
-    return res.redirect(301, cleanPath);
+
+    const isSafeLocalRedirectPath =
+      cleanPath.startsWith('/') &&
+      !cleanPath.startsWith('//') &&
+      !cleanPath.includes('\\') &&
+      !cleanPath.includes('..');
+
+    return res.redirect(301, isSafeLocalRedirectPath ? cleanPath : '/');
   } else {
     next();
   }
