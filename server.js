@@ -256,21 +256,27 @@ const filamentIconRateLimit = expressRateLimit({
     message: 'Too Many Reqests, Please Try Again Later'
 });
 
-const loadOrderRateLimit = expressRateLimit({
+const getOrderRateLimit = expressRateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: 'Too Many Requests, Please Try Again Later'
 });
 
-const loadOrdersRateLimit = expressRateLimit({
+const getOrdersRateLimit = expressRateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: 'Too Many Requests, Please Try Again Later'
 });
 
-const loadLoginPageRateLimit = expressRateLimit({
+const getLoginPageRateLimit = expressRateLimit({
     windowMs: 15 * 60 * 100,
     max: 10,
+    message: 'Too Many Requests, Please Try Again Later'
+});
+
+const getFilamentsWithIconsRateLimit = expressRateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 25,
     message: 'Too Many Requests, Please Try Again Later'
 });
 
@@ -531,7 +537,7 @@ app.post('/api/finishOrder', requireAuthentication, async (req, res) => {
     }
 });
 
-app.get('/api/whatColorsHaveFilamentIcons/:material', (req, res) => {
+app.get('/api/whatColorsHaveFilamentIcons/:material', getFilamentsWithIconsRateLimit, (req, res) => {
     const material = req.params.material;
 
     const filamentIconsPath = path.join(filamentIconsDirectory, material);
@@ -546,7 +552,7 @@ app.get('/api/whatColorsHaveFilamentIcons/:material', (req, res) => {
     res.json(colorsWtihFilamentIcons);
 })
 
-app.get('/pages/login', loadLoginPageRateLimit, (req, res) => {
+app.get('/pages/login', getLoginPageRateLimit, (req, res) => {
     if (req.session.isAuthenticated) {
         res.redirect(303, getPageUrl('orders'));
     } else {
@@ -554,11 +560,11 @@ app.get('/pages/login', loadLoginPageRateLimit, (req, res) => {
     }
 });
 
-app.get('/pages/orders', loadOrdersRateLimit, redirectToLoginIfNotAuthenticated, (req, res) => {
+app.get('/pages/orders', getOrdersRateLimit, redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('orders'));
 });
 
-app.get('/pages/order/:id', loadOrderRateLimit, redirectToLoginIfNotAuthenticated, (req, res) => {
+app.get('/pages/order/:id', getOrderRateLimit, redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('order'));
 });
 
