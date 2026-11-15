@@ -2,11 +2,9 @@
 /cert/*
 /orders/*
 /sessions/*
-
-#Ignore Because It Contains Secrets
 /config/*
 
-#Ignore node_modules Because They Will Get Rebuilt And Uses Lots Of Space
+#Ignore node_modules Because They Will Get Rebuilt And Use Lots Of Space
 /node_modules
 
 #Allow Files With .gitkeep To Exist

@@ -1,5 +1,3 @@
-//const getTemplateFromServer = window.network.getTemplateFromServer;
-
 async function loadFooter() {
     let footerContent = await getTemplateFromServer('footer');
 

@@ -20,7 +20,6 @@ try {
 
 const port = process.env.PORT || 3000;
 const production = process.env.PRODUCTION == 'true' || false;
-const reverseProxy = process.env.REVERSE_PROXY || production;
 const secret = process.env.SECRET || crypto.randomBytes(32).toString('hex');
 const domain = production ? process.env.DOMAIN : ('localhost:' + port);
 
@@ -38,9 +37,9 @@ const ordersDirectory = path.join(__dirname, 'orders');
 
 const filamentIconsDirectory = path.join(__dirname, 'public', 'images', 'filamentIcons');
 
-fs.writeFileSync(envFile, `PORT=${port}\nPRODUCTION=${production}\nREVERSE_PROXY=${reverseProxy}\nSECRET=${secret}\nDOMAIN=${domain}`);
+fs.writeFileSync(envFile, `PORT=${port}\nPRODUCTION=${production}\nSECRET=${secret}\nDOMAIN=${domain}`);
 
-if (!fs.existsSync(credentialsFile)) {
+if (!fs.existsSync(credentialsFile) || process.env.ADMIN_USERNAME || process.env.ADMIN_PASSWORD) {
     const credentials = {
         Username: process.env.ADMIN_USERNAME || 'admin',
         PasswordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin', 12)
@@ -271,7 +270,7 @@ function redirectToLoginIfNotAuthenticated(req, res, next) {
 
 //Network
 
-app.set('trust proxy', reverseProxy);
+app.set('trust proxy', production ? 1 : 0);
 
 app.use(helmet());
 app.use(express.json());
@@ -283,7 +282,7 @@ app.use(expressSession({
     secret: secret,
     resave: false,
     saveUninitialized: false,
-    proxy: reverseProxy,
+    proxy: production,
     name: 'printshop.sid',
     cookie:  {
         maxAge: 1000 * 60 * 60 * 24,
@@ -554,7 +553,7 @@ app.use(express.static('public', {
     extensions: ['html']
 }));
 
-if (reverseProxy) {
+if (production) {
     app.listen(port, () => {
         console.log(`Server Running On Port ${port}!`);
     });
