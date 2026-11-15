@@ -260,7 +260,13 @@ const loadOrderRateLimit = expressRateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: 'Too Many Requests, Please Try Again Later'
-})
+});
+
+const loadOrdersRateLimit = expressRateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too Many Requests, Please Try Again Later'
+});
 
 function requireAuthentication(req, res, next) {
     if (req.session.isAuthenticated) {
@@ -542,7 +548,7 @@ app.get('/pages/login', (req, res) => {
     }
 });
 
-app.get('/pages/orders', redirectToLoginIfNotAuthenticated, (req, res) => {
+app.get('/pages/orders', loadOrdersRateLimit, redirectToLoginIfNotAuthenticated, (req, res) => {
     res.sendFile(getPageDirectory('orders'));
 });
 
