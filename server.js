@@ -328,21 +328,6 @@ app.use(expressSession({
     }
 }));
 app.use((req, res, next) => {
-  if (req.path.endsWith('.html')) {
-    const cleanPath = req.path.slice(0, -5);
-
-    const isSafeLocalRedirectPath =
-      cleanPath.startsWith('/') &&
-      !cleanPath.startsWith('//') &&
-      !cleanPath.includes('\\') &&
-      !cleanPath.includes('..');
-
-    return res.redirect(301, isSafeLocalRedirectPath ? cleanPath : '/');
-  } else {
-    next();
-  }
-});
-app.use((req, res, next) => {
     const decodedPath = decodeURIComponent(req.path || '');
 
     if (decodedPath.includes('..')) {
