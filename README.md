@@ -21,10 +21,6 @@ A simple application for myself to submit and manage print orders.
 	```bash
 	pnpm install
 	```
-3. Setup Workspace
-	```bash
-	pnpm run setup
-	```
 
 ### Run
 
@@ -36,7 +32,6 @@ pnpm start
 
 - / - backend
 - /server.js - main server executable
-- /setup.js - setup helper
 - /orders - orders folder
 - /sessions - stores user sessions
 - /public/ - static assets
