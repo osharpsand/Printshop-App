@@ -612,25 +612,6 @@ app.use(express.static('public', {
     extensions: ['html']
 }));
 
-if (production) {
-    app.listen(port, () => {
-        console.log(`Server Running On Port ${port}!`);
-    });
-} else {
-    const keyFile = path.join(__dirname, 'cert', 'key.pem');
-    const certFile = path.join(__dirname, 'cert', 'cert.pem');
-
-    if (!fs.existsSync(keyFile) || !fs.existsSync(certFile)) {
-        console.error('A key.pem and cert.pem file must be in the cert directory to start the server without a reverse proxy!');
-        process.exit(1);
-    }
-
-    const sslOptions = {
-        key: fs.readFileSync(keyFile),
-        cert: fs.readFileSync(certFile),
-    };
-
-    https.createServer(sslOptions, app).listen(port, () => {
-        console.log(`Server Running On Port ${port}!`);
-    });
-}
+app.listen(port, () => {
+    console.log(`Server Running On Port ${port}!`);
+});
