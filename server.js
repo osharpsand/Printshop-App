@@ -541,7 +541,14 @@ app.post('/api/finishOrder', requireAuthentication, async (req, res) => {
 app.get('/api/whatColorsHaveFilamentIcons/:material', getFilamentsWithIconsRateLimit, (req, res) => {
     const material = req.params.material;
 
-    const filamentIconsPath = path.join(filamentIconsDirectory, material);
+    const iconsBasePath = path.resolve(filamentIconsDirectory);
+    const filamentIconsPath = path.resolve(iconsBasePath, material);
+    const relativeIconsPath = path.relative(iconsBasePath, filamentIconsPath);
+
+    if (relativeIconsPath.startsWith('..') || path.isAbsolute(relativeIconsPath)) {
+        res.json([]);
+        return;
+    }
 
     if (!fs.existsSync(filamentIconsPath)) {
         res.json([]);
