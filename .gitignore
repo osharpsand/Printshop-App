@@ -7,8 +7,5 @@
 #Ignore node_modules Because They Will Get Rebuilt And Use Lots Of Space
 /node_modules
 
-#Ignore docker-compose.override.yml So Individual Devs Can Override Local Ports
-/docker-compose.override.yml
-
 #Allow Files With .gitkeep To Exist
 !.gitkeep
