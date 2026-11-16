@@ -23,7 +23,7 @@ try {
 const port = process.env.PORT || 3000;
 const production = process.env.PRODUCTION == 'true' || false;
 const secret = process.env.SECRET || crypto.randomBytes(32).toString('hex');
-const domain = production ? process.env.DOMAIN : ('localhost:' + port);
+const domain =  process.env.DOMAIN || ('localhost:' + port);
 
 const app = express();
 
