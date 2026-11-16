@@ -190,7 +190,21 @@ function getPageUrl(name) {
 }
 
 function getOrderPath(name) {
-    return path.join(ordersDirectory, name.includes('.json') ? name : name + '.json' );
+    const rawName = String(name);
+    const baseName = rawName.endsWith('.json') ? rawName.slice(0, -5) : rawName;
+
+    if (!/^\d+$/.test(baseName)) {
+        throw new Error('Invalid order id');
+    }
+
+    const ordersRoot = path.resolve(ordersDirectory);
+    const resolvedOrderPath = path.resolve(ordersRoot, baseName + '.json');
+
+    if (resolvedOrderPath !== ordersRoot && !resolvedOrderPath.startsWith(ordersRoot + path.sep)) {
+        throw new Error('Invalid order path');
+    }
+
+    return resolvedOrderPath;
 }
 
 function submitOrder(order) {
