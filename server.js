@@ -36,6 +36,7 @@ const materials = readJson(materialsFile, true);
 
 const pagesDirectory = path.join(__dirname, 'public', 'pages');
 const ordersDirectory = path.join(__dirname, 'orders');
+const sessionsDirectory = path.join(__dirname, 'sessions');
 
 const filamentIconsDirectory = path.join(__dirname, 'public', 'images', 'filamentIcons');
 
@@ -331,12 +332,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(expressSession({
     store: new FileStore({
-        path: "./sessions"
+        path: sessionsDirectory
     }),
     secret: secret,
     resave: false,
     saveUninitialized: false,
-    proxy: production,
+    proxy: isHttps,
     name: 'printshop.sid',
     cookie:  {
         maxAge: 1000 * 60 * 60 * 24,
