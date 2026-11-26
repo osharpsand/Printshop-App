@@ -724,3 +724,8 @@ startServer().catch(error => {
     console.error('Failed to start server:', error);
     process.exit(1);
 });
+
+process.on('SIGINT', () => {
+    console.log('The Server Will Shut Down Now.');
+    process.exit(0);
+});
