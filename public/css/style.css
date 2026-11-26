@@ -640,6 +640,10 @@ footer a:hover {
     margin-top: 0;
 }
 
+.order-total-price {
+    margin-bottom: 12px;
+}
+
 .order-action-buttons {
     display: flex;
     justify-content: center;

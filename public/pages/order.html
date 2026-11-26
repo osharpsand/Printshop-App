@@ -39,7 +39,10 @@
             <div class="form-section">
                 <h2>Existing Prints</h2>
                 <div id="existingItemsContainer"></div>
-                <button id="addExistingItemButton" type="button" class="secondary-button order-add-item-button" hidden>
+                <div id="existingItemsTotalPriceContainer" class="total-price order-total-price">
+                    <strong>Total for Existing Prints: $<span id="existingItemsTotalPriceText">0.00</span></strong>
+                </div>
+                <button id="addExistingItemButton" type="button" class="primary-button order-add-item-button" hidden>
                     Add Existing Print
                 </button>
             </div>
@@ -47,7 +50,7 @@
             <div class="form-section">
                 <h2>Custom Prints</h2>
                 <div id="customItemsContainer"></div>
-                <button id="addCustomItemButton" type="button" class="secondary-button order-add-item-button" hidden>
+                <button id="addCustomItemButton" type="button" class="primary-button order-add-item-button" hidden>
                     Add Custom Print
                 </button>
             </div>
@@ -57,17 +60,18 @@
                     <img id="orderModeImage" src="/images/menuIcons/pencil.svg" alt="">
                 </button>
                 <button id="orderSaveButton" type="button" class="primary-button order-action-button" aria-label="Save order" title="Save order" hidden>
-                    <img src="/images/menuIcons/check.svg" alt="">
+                    <img src="/images/menuIcons/save.svg" alt="">
                 </button>
                 <button id="orderBackButton" type="button" class="secondary-button order-action-button" aria-label="Back to orders" title="Back to orders">
                     <img src="/images/menuIcons/arrow-right.svg" alt="">
                 </button>
-                <button id="orderFinishButton" type="button" class="danger-button order-action-button" aria-label="Finish order" title="Finish order">
+                <button id="orderFinishButton" type="button" class="primary-button order-action-button" aria-label="Finish order" title="Finish order">
                     <img src="/images/menuIcons/check.svg" alt="">
                 </button>
             </div>
         </div>
 
+        <script src="/js/custom-selects.js"></script>
         <script src="/js/network.js"></script>
         <script src="/js/footer.js"></script>
         <script src="/js/order.js"></script>

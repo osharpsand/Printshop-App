@@ -3,10 +3,17 @@ let items;
 let materials;
 let existingItemRowTemplate;
 let customItemRowTemplate;
+let existingItemColorOptionTemplate;
+let existingItemColorImageOptionTemplate;
+let customItemColorOptionTemplate;
+let customItemColorImageOptionTemplate;
 let existingItemRowCount = 0;
 let customItemRowCount = 0;
 let isEditing = false;
 let hasUnsavedChanges = false;
+let originalOrderSnapshot = null;
+let existingItemsPriceRequestId = 0;
+const filamentIconColorsByMaterial = new Map();
 
 function getElement(id) {
     return document.getElementById(id);
@@ -35,6 +42,71 @@ function setSelectOptions(select, options, placeholder, selectedValue) {
     select.value = selectedValue || '';
 }
 
+function createTemplateOption(select, value, template, replacements) {
+    let html = template;
+    for (const [name, replacement] of Object.entries(replacements)) {
+        html = html.replaceAll(`{{${name}}}`, replacement);
+    }
+
+    const option = document.createElement('option');
+    option.value = value;
+    option.innerHTML = html;
+    select.appendChild(option);
+    return option;
+}
+
+async function getFilamentIconColors(material) {
+    if (!filamentIconColorsByMaterial.has(material)) {
+        filamentIconColorsByMaterial.set(
+            material,
+            whatColorsHaveFilamentIcons(encodeURIComponent(material))
+        );
+    }
+
+    try {
+        const colors = await filamentIconColorsByMaterial.get(material);
+        if (!Array.isArray(colors)) {
+            throw new Error('The server returned invalid filament icon data.');
+        }
+        return colors;
+    } catch (error) {
+        filamentIconColorsByMaterial.delete(material);
+        throw error;
+    }
+}
+
+async function setColorOptions(materialSelect, colorSelect, selectedColor, colorOptionTemplate, colorImageOptionTemplate) {
+    const materialName = materialSelect.value;
+    setSelectOptions(colorSelect, [], 'Select Color', '');
+
+    const material = materials[materialName];
+    if (!material) return;
+
+    const colorsWithFilamentIcons = await getFilamentIconColors(materialName);
+    if (materialSelect.value !== materialName) return;
+
+    colorSelect.innerHTML = '';
+    createOption(colorSelect, '', 'Select Color');
+    for (const [colorName, colorHex] of Object.entries(material.Colors)) {
+        if (colorsWithFilamentIcons.includes(colorName)) {
+            createTemplateOption(colorSelect, colorName, colorImageOptionTemplate, {
+                COLOR_NAME: colorName,
+                IMAGE_PATH: `/images/filamentIcons/${encodeURIComponent(materialName)}/${encodeURIComponent(colorName)}.webp`
+            });
+        } else {
+            createTemplateOption(colorSelect, colorName, colorOptionTemplate, {
+                COLOR_NAME: colorName,
+                COLOR_HEX: colorHex
+            });
+        }
+    }
+
+    if (selectedColor && !Array.from(colorSelect.options).some(option => option.value === selectedColor)) {
+        createOption(colorSelect, selectedColor, selectedColor);
+    }
+    colorSelect.value = selectedColor || '';
+}
+
 function createOrderRow(container, template, rowClass, rowId, replacements) {
     let html = template;
     for (const [name, value] of Object.entries(replacements)) {
@@ -50,7 +122,12 @@ function createOrderRow(container, template, rowClass, rowId, replacements) {
 }
 
 function markChanged() {
-    hasUnsavedChanges = true;
+    if (originalOrderSnapshot === null) return;
+
+    hasUnsavedChanges = getOrderFormSnapshot() !== originalOrderSnapshot;
+    if (isEditing) {
+        getElement('orderSaveButton').hidden = !hasUnsavedChanges;
+    }
 }
 
 function updateOrderEmptyMessage(container, label) {
@@ -71,15 +148,19 @@ function getExistingItemDefinition(name) {
     return Object.prototype.hasOwnProperty.call(items, name) ? items[name] : null;
 }
 
-function updateExistingItemColors(row, selectedColor) {
+async function updateExistingItemColors(row, selectedColor) {
     const materialSelect = row.querySelector('.existing-item-material');
     const colorSelect = row.querySelector('.existing-item-color');
-    const material = materials[materialSelect.value];
-    const colors = material ? Object.keys(material.Colors) : [];
-    setSelectOptions(colorSelect, colors, 'Select Color', selectedColor);
+    await setColorOptions(
+        materialSelect,
+        colorSelect,
+        selectedColor,
+        existingItemColorOptionTemplate,
+        existingItemColorImageOptionTemplate
+    );
 }
 
-function updateExistingItemMaterials(row, selectedMaterial, selectedColor) {
+async function updateExistingItemMaterials(row, selectedMaterial, selectedColor) {
     const nameSelect = row.querySelector('.existing-item-name');
     const materialSelect = row.querySelector('.existing-item-material');
     const item = getExistingItemDefinition(nameSelect.value);
@@ -87,10 +168,10 @@ function updateExistingItemMaterials(row, selectedMaterial, selectedColor) {
     const materialValue = selectedMaterial || (item ? item.DefaultMaterial : '');
 
     setSelectOptions(materialSelect, materialOptions, 'Select Material', materialValue);
-    updateExistingItemColors(row, selectedColor);
+    await updateExistingItemColors(row, selectedColor);
 }
 
-function addExistingItemRow(existingItem = {}) {
+async function addExistingItemRow(existingItem = {}) {
     const container = getElement('existingItemsContainer');
     const rowId = existingItemRowCount++;
     const row = createOrderRow(
@@ -107,39 +188,59 @@ function addExistingItemRow(existingItem = {}) {
     const removeButton = row.querySelector('.existing-item-remove-button');
 
     setSelectOptions(nameSelect, Object.keys(items), 'Select Product', existingItem.Name || '');
-    updateExistingItemMaterials(row, existingItem.Material || '', existingItem.Color || '');
     quantityInput.value = existingItem.Quantity || 1;
     removeButton.style.display = '';
 
-    nameSelect.addEventListener('change', () => {
-        updateExistingItemMaterials(row, '', '');
+    nameSelect.addEventListener('change', async () => {
         markChanged();
+        try {
+            await updateExistingItemMaterials(row, '', '');
+            markChanged();
+        } catch (error) {
+            showColorLoadError(error);
+        }
+        updateExistingItemsTotalPrice();
     });
-    materialSelect.addEventListener('change', () => {
-        updateExistingItemColors(row, '');
+    materialSelect.addEventListener('change', async () => {
         markChanged();
+        try {
+            await updateExistingItemColors(row, '');
+            markChanged();
+        } catch (error) {
+            showColorLoadError(error);
+        }
+        updateExistingItemsTotalPrice();
     });
     colorSelect.addEventListener('change', markChanged);
-    quantityInput.addEventListener('input', markChanged);
+    quantityInput.addEventListener('input', () => {
+        markChanged();
+        updateExistingItemsTotalPrice();
+    });
     removeButton.addEventListener('click', () => {
         row.remove();
         updateOrderEmptyMessage(container, 'existing prints');
         markChanged();
+        updateExistingItemsTotalPrice();
     });
 
+    await updateExistingItemMaterials(row, existingItem.Material || '', existingItem.Color || '');
     updateOrderEmptyMessage(container, 'existing prints');
     return row;
 }
 
-function updateCustomItemColors(row, selectedColor) {
+async function updateCustomItemColors(row, selectedColor) {
     const materialSelect = row.querySelector('.custom-item-material');
     const colorSelect = row.querySelector('.custom-item-color');
-    const material = materials[materialSelect.value];
-    const colors = material ? Object.keys(material.Colors) : [];
-    setSelectOptions(colorSelect, colors, 'Select Color', selectedColor);
+    await setColorOptions(
+        materialSelect,
+        colorSelect,
+        selectedColor,
+        customItemColorOptionTemplate,
+        customItemColorImageOptionTemplate
+    );
 }
 
-function addCustomItemRow(customItem = {}) {
+async function addCustomItemRow(customItem = {}) {
     const container = getElement('customItemsContainer');
     const rowId = customItemRowCount++;
     const row = createOrderRow(
@@ -156,15 +257,19 @@ function addCustomItemRow(customItem = {}) {
     const removeButton = row.querySelector('.custom-item-remove-button');
 
     setSelectOptions(materialSelect, Object.keys(materials), 'Select Material', customItem.Material || '');
-    updateCustomItemColors(row, customItem.Color || '');
     linkInput.value = customItem.Link || '';
     quantityInput.value = customItem.Quantity || 1;
     removeButton.style.display = '';
 
     linkInput.addEventListener('input', markChanged);
-    materialSelect.addEventListener('change', () => {
-        updateCustomItemColors(row, '');
+    materialSelect.addEventListener('change', async () => {
         markChanged();
+        try {
+            await updateCustomItemColors(row, '');
+            markChanged();
+        } catch (error) {
+            showColorLoadError(error);
+        }
     });
     colorSelect.addEventListener('change', markChanged);
     quantityInput.addEventListener('input', markChanged);
@@ -174,8 +279,60 @@ function addCustomItemRow(customItem = {}) {
         markChanged();
     });
 
+    await updateCustomItemColors(row, customItem.Color || '');
     updateOrderEmptyMessage(container, 'custom prints');
     return row;
+}
+
+function showColorLoadError(error) {
+    showOrderError(`Unable to load filament colors: ${error.message}`);
+}
+
+function showOrderError(message) {
+    const errorElement = getElement('orderError');
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+}
+
+async function updateExistingItemsTotalPrice() {
+    const requestId = ++existingItemsPriceRequestId;
+    const existingItems = [];
+
+    for (const row of getElement('existingItemsContainer').querySelectorAll('.existing-item-row')) {
+        const values = getRowValues(row, {
+            Name: '.existing-item-name',
+            Material: '.existing-item-material',
+            Quantity: '.existing-item-quantity'
+        });
+
+        if (values.Name && values.Material && values.Quantity) {
+            existingItems.push({
+                Name: values.Name,
+                Material: values.Material,
+                Quantity: values.Quantity
+            });
+        }
+    }
+
+    if (existingItems.length === 0) {
+        getElement('existingItemsTotalPriceText').textContent = '0.00';
+        return;
+    }
+
+    try {
+        const price = await postToServer('calculateOrderPrice', existingItems);
+        if (requestId !== existingItemsPriceRequestId) return;
+
+        const numericPrice = Number(price);
+        if (!Number.isFinite(numericPrice)) {
+            throw new Error(`Could not calculate the existing prints total: ${price}`);
+        }
+        getElement('existingItemsTotalPriceText').textContent = numericPrice.toFixed(2);
+    } catch (error) {
+        if (requestId === existingItemsPriceRequestId) {
+            showOrderError(`Unable to update existing prints total: ${error.message}`);
+        }
+    }
 }
 
 function getRowValues(row, selectors) {
@@ -184,6 +341,38 @@ function getRowValues(row, selectors) {
         values[key] = row.querySelector(selector).value.trim();
     }
     return values;
+}
+
+function getOrderFormSnapshot() {
+    function getRows(containerId, rowSelector, selectors) {
+        return Array.from(getElement(containerId).querySelectorAll(rowSelector), row => {
+            const values = getRowValues(row, selectors);
+            const quantity = Number(values.Quantity);
+            if (values.Quantity !== '' && Number.isFinite(quantity)) {
+                values.Quantity = String(quantity);
+            }
+            return values;
+        });
+    }
+
+    return JSON.stringify({
+        FirstName: getElement('firstName').value.trim(),
+        LastName: getElement('lastName').value.trim(),
+        Contact: getElement('contact').value.trim(),
+        Notes: getElement('notes').value.trim(),
+        ExistingItems: getRows('existingItemsContainer', '.existing-item-row', {
+            Name: '.existing-item-name',
+            Material: '.existing-item-material',
+            Color: '.existing-item-color',
+            Quantity: '.existing-item-quantity'
+        }),
+        CustomItems: getRows('customItemsContainer', '.custom-item-row', {
+            Link: '.custom-item-link',
+            Material: '.custom-item-material',
+            Color: '.custom-item-color',
+            Quantity: '.custom-item-quantity'
+        })
+    });
 }
 
 function isBlankRow(values, keys) {
@@ -258,7 +447,8 @@ function readOrderDetails() {
 
 function setEditing(editing) {
     isEditing = editing;
-    getElement('orderTitle').textContent = `${editing ? 'Editing' : 'Viewing'} ${order.FullName}'s Order`;
+    const possessiveSuffix = String(order.LastName || '').trim().toLowerCase().endsWith('s') ? "'" : "'s";
+    getElement('orderTitle').textContent = `${editing ? 'Editing' : 'Viewing'} ${order.FullName}${possessiveSuffix} Order`;
 
     for (const id of ['firstName', 'lastName', 'contact', 'notes']) {
         getElement(id).readOnly = !editing;
@@ -276,10 +466,12 @@ function setEditing(editing) {
     }
     getElement('addExistingItemButton').hidden = !editing;
     getElement('addCustomItemButton').hidden = !editing;
-    getElement('orderSaveButton').hidden = !editing;
-    getElement('orderModeImage').src = `/images/menuIcons/${editing ? 'eye' : 'pencil'}.svg`;
-    getElement('orderModeButton').setAttribute('aria-label', editing ? 'View order' : 'Edit order');
-    getElement('orderModeButton').title = editing ? 'View order' : 'Edit order';
+    getElement('orderSaveButton').hidden = !editing || !hasUnsavedChanges;
+    getElement('orderBackButton').hidden = editing;
+    getElement('orderFinishButton').hidden = editing;
+    getElement('orderModeImage').src = `/images/menuIcons/${editing ? 'revert' : 'pencil'}.svg`;
+    getElement('orderModeButton').setAttribute('aria-label', editing ? 'Undo edits' : 'Edit order');
+    getElement('orderModeButton').title = editing ? 'Undo edits' : 'Edit order';
 }
 
 async function saveOrder() {
@@ -310,7 +502,10 @@ async function saveOrder() {
         }
 
         order = editedOrder;
+        originalOrderSnapshot = getOrderFormSnapshot();
         hasUnsavedChanges = false;
+        existingItemsPriceRequestId++;
+        getElement('existingItemsTotalPriceText').textContent = Number(price).toFixed(2);
         setEditing(false);
     } catch (error) {
         alert(`Error Saving Order: ${error.message}`);
@@ -346,29 +541,52 @@ async function setup() {
             throw new Error('The order URL contains an invalid order ID.');
         }
 
-        const results = await Promise.all([
+        const [
+            orderData,
+            itemData,
+            materialData,
+            existingRowTemplate,
+            customRowTemplate,
+            existingColorOptionTemplate,
+            existingColorImageOptionTemplate,
+            customColorOptionTemplate,
+            customColorImageOptionTemplate
+        ] = await Promise.all([
             postToServer('getOrder', { OrderId: orderId }),
             getFromServer('items'),
             getFromServer('materials'),
             getTemplateFromServer('existingItemRow'),
-            getTemplateFromServer('customItemRow')
+            getTemplateFromServer('customItemRow'),
+            getTemplateFromServer('existingItemColorOption'),
+            getTemplateFromServer('existingItemColorImageOption'),
+            getTemplateFromServer('customItemColorOption'),
+            getTemplateFromServer('customItemColorImageOption')
         ]);
-        [order, items, materials, existingItemRowTemplate, customItemRowTemplate] = results;
+        order = orderData;
+        items = itemData;
+        materials = materialData;
+        existingItemRowTemplate = existingRowTemplate;
+        customItemRowTemplate = customRowTemplate;
+        existingItemColorOptionTemplate = existingColorOptionTemplate;
+        existingItemColorImageOptionTemplate = existingColorImageOptionTemplate;
+        customItemColorOptionTemplate = customColorOptionTemplate;
+        customItemColorImageOptionTemplate = customColorImageOptionTemplate;
         if (!order || typeof order !== 'object' || Array.isArray(order)) {
             throw new Error(typeof order === 'string' ? order : 'The server returned invalid order details.');
+        }
+        const existingItemsPrice = Number(order.Price);
+        if (!Number.isFinite(existingItemsPrice)) {
+            throw new Error('The server returned an invalid existing prints total.');
         }
 
         getElement('firstName').value = order.FirstName || '';
         getElement('lastName').value = order.LastName || '';
         getElement('contact').value = order.Contact || '';
         getElement('notes').value = order.Notes || '';
+        getElement('existingItemsTotalPriceText').textContent = existingItemsPrice.toFixed(2);
 
-        for (const existingItem of order.ExistingItems || []) {
-            addExistingItemRow(existingItem);
-        }
-        for (const customItem of order.CustomItems || []) {
-            addCustomItemRow(customItem);
-        }
+        await Promise.all((order.ExistingItems || []).map(existingItem => addExistingItemRow(existingItem)));
+        await Promise.all((order.CustomItems || []).map(customItem => addCustomItemRow(customItem)));
         updateOrderEmptyMessage(getElement('existingItemsContainer'), 'existing prints');
         updateOrderEmptyMessage(getElement('customItemsContainer'), 'custom prints');
 
@@ -376,16 +594,19 @@ async function setup() {
             getElement(id).addEventListener('input', markChanged);
         }
         getElement('addExistingItemButton').addEventListener('click', () => {
-            addExistingItemRow();
+            addExistingItemRow()
+                .catch(showColorLoadError);
             markChanged();
+            updateExistingItemsTotalPrice();
         });
         getElement('addCustomItemButton').addEventListener('click', () => {
-            addCustomItemRow();
+            addCustomItemRow()
+                .catch(showColorLoadError);
             markChanged();
         });
         getElement('orderModeButton').addEventListener('click', () => {
             if (isEditing && hasUnsavedChanges) {
-                if (!confirm('Discard your unsaved changes?')) return;
+                if (!confirm('Discard your unsaved edits?')) return;
                 window.location.reload();
                 return;
             }
@@ -397,6 +618,7 @@ async function setup() {
         });
         getElement('orderFinishButton').addEventListener('click', finishOrder);
 
+        originalOrderSnapshot = getOrderFormSnapshot();
         setEditing(false);
         actionButtons.forEach(button => button.disabled = false);
     } catch (error) {

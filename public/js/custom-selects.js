@@ -48,7 +48,20 @@
             this.observer = new MutationObserver(() => this.render());
             this.observer.observe(this.select, { childList: true });
 
+            this.disabledObserver = new MutationObserver(() => this.syncDisabled());
+            this.disabledObserver.observe(this.select, { attributes: true, attributeFilter: ['disabled'] });
+
+            this.syncDisabled();
             this.render();
+        }
+
+        syncDisabled() {
+            this.trigger.disabled = this.select.disabled;
+            this.trigger.setAttribute('aria-disabled', String(this.select.disabled));
+
+            if (this.select.disabled) {
+                this.close();
+            }
         }
 
         render() {
@@ -94,6 +107,10 @@
         }
 
         open() {
+            if (this.select.disabled) {
+                return;
+            }
+
             if (activeCustomSelect && activeCustomSelect !== this) {
                 activeCustomSelect.close();
             }
