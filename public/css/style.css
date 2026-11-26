@@ -630,6 +630,43 @@ footer a:hover {
     flex-grow: 0;
 }
 
+.order-empty-message {
+    color: #666;
+    font-style: italic;
+}
+
+.order-add-item-button {
+    width: auto;
+    margin-top: 0;
+}
+
+.order-action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.order-action-button {
+    width: 54px;
+    height: 54px;
+    min-height: 54px;
+    flex: 0 0 54px;
+    padding: 8px;
+    margin: 0;
+}
+
+.order-action-button img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+#orderBackButton img {
+    transform: rotate(180deg);
+}
+
 .orders-refresh-button {
     aspect-ratio: 1 / 1;
     max-width: 54px;

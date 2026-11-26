@@ -38,6 +38,12 @@ const pagesDirectory = path.join(__dirname, 'public', 'pages');
 const ordersDirectory = path.join(__dirname, 'orders');
 const sessionsDirectory = path.join(__dirname, 'sessions');
 
+const sessionStore = new FileStore({
+    path: sessionsDirectory
+});
+
+sessionStore.touch = (_sessionId, _session, callback) => callback(null);
+
 const filamentIconsDirectory = path.join(__dirname, 'public', 'images', 'filamentIcons');
 
 const isHttps = production;
@@ -331,9 +337,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(expressSession({
-    store: new FileStore({
-        path: sessionsDirectory
-    }),
+    store: sessionStore,
     secret: secret,
     resave: false,
     saveUninitialized: false,

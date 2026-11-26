@@ -6,45 +6,70 @@
     </head>
     <body>
         <div class="container">
-            <h1>Viewing Ollie's Custom 3D Prints Order</h1>
+            <h1 id="orderTitle">Loading Order...</h1>
 
-            <div>
-                <div>
-                    <div class="form-section">
-                        <h2>Order Information</h2>
+            <div id="orderError" class="error" role="alert"></div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="firstName">First Name</label>
-                                <input id="firstName" type="text" placeholder="First Name" readonly>
-                            </div>
+            <div class="form-section">
+                <h2>Order Information</h2>
 
-                            <div class="form-group">
-                                <label for="lastName">Last Name</label>
-                                <input id="lastName" type="text" placeholder="Last Name" readonly>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="contact">Contact (Phone Or Email)</label>
-                            <input id="contact" type="text" placeholder="(123) 456-7890 or email@example.com" readonly>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="notes">Notes</label>
-                            <textarea id="notes" placeholder="Any additional notes about your order..." class="notes"></textarea>
-                        </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input id="firstName" type="text" placeholder="First Name" readonly required>
                     </div>
 
-                    <div class="form-section">
-                        <h2>Existing Prints</h2>
-                    </div>
-
-                    <div class="form-section">
-                        <h2>Custom Prints</h2>
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input id="lastName" type="text" placeholder="Last Name" readonly required>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label for="contact">Contact (Phone Or Email)</label>
+                    <input id="contact" type="text" placeholder="(123) 456-7890 or email@example.com" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" placeholder="Any additional notes about your order..." class="notes" readonly></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Existing Prints</h2>
+                <div id="existingItemsContainer"></div>
+                <button id="addExistingItemButton" type="button" class="secondary-button order-add-item-button" hidden>
+                    Add Existing Print
+                </button>
+            </div>
+
+            <div class="form-section">
+                <h2>Custom Prints</h2>
+                <div id="customItemsContainer"></div>
+                <button id="addCustomItemButton" type="button" class="secondary-button order-add-item-button" hidden>
+                    Add Custom Print
+                </button>
+            </div>
+
+            <div id="orderActionButtons" class="order-action-buttons">
+                <button id="orderModeButton" type="button" class="secondary-button order-action-button" aria-label="Edit order" title="Edit order">
+                    <img id="orderModeImage" src="/images/menuIcons/pencil.svg" alt="">
+                </button>
+                <button id="orderSaveButton" type="button" class="primary-button order-action-button" aria-label="Save order" title="Save order" hidden>
+                    <img src="/images/menuIcons/check.svg" alt="">
+                </button>
+                <button id="orderBackButton" type="button" class="secondary-button order-action-button" aria-label="Back to orders" title="Back to orders">
+                    <img src="/images/menuIcons/arrow-right.svg" alt="">
+                </button>
+                <button id="orderFinishButton" type="button" class="danger-button order-action-button" aria-label="Finish order" title="Finish order">
+                    <img src="/images/menuIcons/check.svg" alt="">
+                </button>
             </div>
         </div>
+
+        <script src="/js/network.js"></script>
+        <script src="/js/footer.js"></script>
+        <script src="/js/order.js"></script>
     </body>
 </html>
