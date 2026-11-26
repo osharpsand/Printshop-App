@@ -6,9 +6,12 @@ const bcrypt = require('bcrypt');
 const helmet = require('helmet');
 const crypto = require('crypto');
 const https = require('https');
+const net = require('net');
 const lusca = require('lusca');
 const path = require('path');
 const fs = require('fs');
+const selfsigned = require('selfsigned');
+
 const { archiveCompletedOrderDays, moveOrderToArchive } = require('./order-archive');
 
 const FileStore = require('session-file-store')(expressSession);
@@ -26,7 +29,7 @@ try {
 const port = process.env.PORT || 3000;
 const production = process.env.PRODUCTION == 'true' || false;
 const secret = process.env.SECRET || crypto.randomBytes(32).toString('hex');
-const domain =  process.env.DOMAIN || ('localhost:' + port);
+const domain = process.env.DOMAIN || `localhost:${port}`;
 
 const app = express();
 
@@ -41,6 +44,7 @@ const pagesDirectory = path.join(__dirname, 'public', 'pages');
 const ordersDirectory = path.join(__dirname, 'orders');
 const archiveDirectory = path.join(__dirname, 'archive');
 const sessionsDirectory = path.join(__dirname, 'sessions');
+const certDirectory = path.join(__dirname, 'cert');
 
 const sessionStore = new FileStore({
     path: sessionsDirectory
@@ -49,8 +53,6 @@ const sessionStore = new FileStore({
 sessionStore.touch = (_sessionId, _session, callback) => callback(null);
 
 const filamentIconsDirectory = path.join(__dirname, 'public', 'images', 'filamentIcons');
-
-const isHttps = production;
 
 fs.writeFileSync(envFile, `PORT=${port}\nPRODUCTION=${production}\nSECRET=${secret}\nDOMAIN=${domain}`);
 
@@ -199,7 +201,7 @@ function getPageDirectory(name) {
 }
 
 function getPageUrl(name) {
-    return `http${isHttps ? 's' : ''}://${domain}/pages/${name}`;
+    return `https://${domain}/pages/${name}`;
 }
 
 function getOrderPath(name) {
@@ -337,7 +339,19 @@ function redirectToLoginIfNotAuthenticated(req, res, next) {
 
 app.set('trust proxy', production ? 1 : 0);
 
-app.use(helmet());
+if (production) {
+    app.use((req, res, next) => {
+        if (!req.secure) {
+            return res.redirect(308, `https://${domain}${req.originalUrl}`);
+        }
+
+        next();
+    });
+}
+
+app.use(helmet({
+    strictTransportSecurity: production ? undefined : false
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(expressSession({
@@ -345,12 +359,12 @@ app.use(expressSession({
     secret: secret,
     resave: false,
     saveUninitialized: false,
-    proxy: isHttps,
+    proxy: production,
     name: 'printshop.sid',
     cookie:  {
         maxAge: 1000 * 60 * 60 * 24,
         httpOnly: true,
-        secure: isHttps,
+        secure: true,
         sameSite: 'lax'
     }
 }));
@@ -655,6 +669,58 @@ function scheduleOrderArchiveMaintenance() {
 runOrderArchiveMaintenance();
 scheduleOrderArchiveMaintenance();
 
-app.listen(port, () => {
-    console.log(`Server Running On Port ${port}!`);
+async function getDevelopmentTlsOptions() {
+    fs.mkdirSync(certDirectory, { recursive: true });
+
+    const keyFile = path.join(certDirectory, 'localhost-key.pem');
+    const certFile = path.join(certDirectory, 'localhost-cert.pem');
+
+    if (!fs.existsSync(keyFile) || !fs.existsSync(certFile)) {
+        const hostname = new URL(`https://${domain}`).hostname.replace(/^\[|\]$/g, '');
+        const altNames = [
+            { type: 2, value: 'localhost' },
+            { type: 7, ip: '127.0.0.1' },
+            { type: 7, ip: '::1' }
+        ];
+
+        if (net.isIP(hostname)) {
+            altNames.push({ type: 7, ip: hostname });
+        } else if (hostname !== 'localhost') {
+            altNames.push({ type: 2, value: hostname });
+        }
+
+        const certificate = await selfsigned.generate(
+            [{ name: 'commonName', value: hostname }],
+            {
+                days: 365,
+                keySize: 2048,
+                algorithm: 'sha256',
+                extensions: [{ name: 'subjectAltName', altNames }]
+            }
+        );
+
+        fs.writeFileSync(keyFile, certificate.private, { mode: 0o600 });
+        fs.writeFileSync(certFile, certificate.cert);
+        console.log(`Generated a self-signed development certificate in ${certDirectory}.`);
+    }
+
+    return {
+        key: fs.readFileSync(keyFile),
+        cert: fs.readFileSync(certFile)
+    };
+}
+
+async function startServer() {
+    const server = production
+        ? app
+        : https.createServer(await getDevelopmentTlsOptions(), app);
+
+    server.listen(port, () => {
+        console.log(`Server Running On Port ${port}!`);
+    });
+}
+
+startServer().catch(error => {
+    console.error('Failed to start server:', error);
+    process.exit(1);
 });
