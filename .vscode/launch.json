@@ -9,15 +9,6 @@
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}/server.js"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch Setup",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}/setup.js"
     }
   ]
 }

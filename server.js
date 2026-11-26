@@ -12,7 +12,9 @@ const fs = require('fs');
 
 const FileStore = require('session-file-store')(expressSession);
 
-const envFile = path.join(__dirname, 'config', '.env');
+const configDirectory = path.join(__dirname, 'config');
+
+const envFile = path.join(configDirectory, '.env');
 
 try {
     process.loadEnvFile(envFile);
@@ -27,9 +29,9 @@ const domain =  process.env.DOMAIN || ('localhost:' + port);
 
 const app = express();
 
-const credentialsFile = path.join(__dirname, 'config', 'credentials.json');
-const itemsFile = path.join(__dirname, 'items.json');
-const materialsFile = path.join(__dirname, 'materials.json');
+const credentialsFile = path.join(configDirectory, 'credentials.json');
+const itemsFile = path.join(configDirectory, 'items.json');
+const materialsFile = path.join(configDirectory, 'materials.json');
 
 const items = readJson(itemsFile, true);
 const materials = readJson(materialsFile, true);

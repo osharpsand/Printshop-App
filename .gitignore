@@ -2,7 +2,10 @@
 /cert/*
 /orders/*
 /sessions/*
-/config/*
+
+#Ignore Private Files
+/config/.env
+/config/credentials.json
 
 #Ignore node_modules Because They Will Get Rebuilt And Use Lots Of Space
 /node_modules
