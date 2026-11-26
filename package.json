@@ -26,7 +26,7 @@
   },
   "overrides": {
     "@mapbox/node-pre-gyp": "^1.0.14",
-    "tar": "^6.2.1",
+    "tar": "^7.5.21",
     "minimatch": "^11.0.8",
     "glob": "^14.0.2"
   }
