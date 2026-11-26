@@ -67,6 +67,10 @@ async function loadOrders() {
 }
 
 function setup() {
+    getElement('ordersHomeButton').addEventListener('click', () => {
+        location.href = '/';
+    });
+
     getElement('ordersRefreshButton').addEventListener('click', loadOrders);
 
     getElement('ordersLogoutButton').addEventListener('click', async () => {
