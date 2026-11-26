@@ -1,5 +1,31 @@
+let csrfTokenPromise;
+
 function getBaseUrl() {
     return window.location.origin || (window.location.protocol + '//' + window.location.host);
+}
+
+async function getCsrfToken() {
+    if (!csrfTokenPromise) {
+        csrfTokenPromise = fetch(getBaseUrl() + '/api/csrf-token', {
+            method: 'GET'
+        }).then(async response => {
+            if (!response.ok) {
+                throw new Error(`Failed to get CSRF token: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (typeof data.token !== 'string' || data.token.length === 0) {
+                throw new Error('The server returned an invalid CSRF token.');
+            }
+
+            return data.token;
+        }).catch(error => {
+            csrfTokenPromise = undefined;
+            throw error;
+        });
+    }
+
+    return csrfTokenPromise;
 }
 
 async function processResponse(response) {
@@ -26,11 +52,13 @@ async function getFromServer(address) {
 }
 
 async function postToServer(address, data) {
+    const csrfToken = await getCsrfToken();
     const response = await fetch(getBaseUrl() + '/api/' + address, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
-            'Content-Type': 'application/json; charset=UTF-8'
+            'Content-Type': 'application/json; charset=UTF-8',
+            'X-CSRF-Token': csrfToken
         }
     });
 

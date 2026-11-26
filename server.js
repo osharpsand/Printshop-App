@@ -39,6 +39,8 @@ const ordersDirectory = path.join(__dirname, 'orders');
 
 const filamentIconsDirectory = path.join(__dirname, 'public', 'images', 'filamentIcons');
 
+const isHttps = production;
+
 fs.writeFileSync(envFile, `PORT=${port}\nPRODUCTION=${production}\nSECRET=${secret}\nDOMAIN=${domain}`);
 
 if (!fs.existsSync(credentialsFile) || process.env.ADMIN_USERNAME || process.env.ADMIN_PASSWORD) {
@@ -186,7 +188,7 @@ function getPageDirectory(name) {
 }
 
 function getPageUrl(name) {
-    return `https://${domain}/pages/${name}`;
+    return `http${isHttps ? 's' : ''}://${domain}/pages/${name}`;
 }
 
 function getOrderPath(name) {
@@ -339,7 +341,7 @@ app.use(expressSession({
     cookie:  {
         maxAge: 1000 * 60 * 60 * 24,
         httpOnly: true,
-        secure: true,
+        secure: isHttps,
         sameSite: 'lax'
     }
 }));
@@ -357,6 +359,10 @@ app.use((req, res, next) => {
 
     next();
 })
+
+app.get('/api/csrf-token', (req, res) => {
+    res.json({ token: req.csrfToken() });
+});
 
 app.get('/', (req, res) => {
     res.redirect(301, getPageUrl('form'));
