@@ -2,6 +2,7 @@
 /cert/*
 /orders/*
 /sessions/*
+/archive/*
 
 #Ignore Private Files
 /config/.env

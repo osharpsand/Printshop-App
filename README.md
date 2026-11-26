@@ -33,6 +33,7 @@ pnpm start
 - / - backend
 - /server.js - main server executable
 - /orders - orders folder
+- /archive - completed orders are grouped by local date; after local midnight each day's folder is verified, compressed to `YYYY-MM-DD.tar.gz`, then removed. Missed days are processed when the server starts.
 - /sessions - stores user sessions
 - /public/ - static assets
 - /README.md - project README

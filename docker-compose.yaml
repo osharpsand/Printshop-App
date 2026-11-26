@@ -19,4 +19,5 @@ services:
     volumes:
       - ./config:/app/config
       - ./orders:/app/orders
+      - ./archive:/app/archive
       - ./sessions:/app/sessions

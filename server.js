@@ -9,6 +9,7 @@ const https = require('https');
 const lusca = require('lusca');
 const path = require('path');
 const fs = require('fs');
+const { archiveCompletedOrderDays, moveOrderToArchive } = require('./order-archive');
 
 const FileStore = require('session-file-store')(expressSession);
 
@@ -38,6 +39,7 @@ const materials = readJson(materialsFile, true);
 
 const pagesDirectory = path.join(__dirname, 'public', 'pages');
 const ordersDirectory = path.join(__dirname, 'orders');
+const archiveDirectory = path.join(__dirname, 'archive');
 const sessionsDirectory = path.join(__dirname, 'sessions');
 
 const sessionStore = new FileStore({
@@ -260,7 +262,7 @@ function editOrder(editedOrder) {
 function finishOrder(orderId) {
     const orderPath = getOrderPath(orderId.toString());
 
-    fs.unlinkSync(orderPath);
+    moveOrderToArchive(orderPath, archiveDirectory);
 }
 
 //Middleware
@@ -624,6 +626,34 @@ app.get('/images/filamentIcons/:material/:color.webp', filamentIconRateLimit, as
 app.use(express.static('public', {
     extensions: ['html']
 }));
+
+let orderArchiveMaintenance = Promise.resolve();
+
+function runOrderArchiveMaintenance() {
+    orderArchiveMaintenance = orderArchiveMaintenance
+        .then(() => archiveCompletedOrderDays(archiveDirectory))
+        .catch(error => {
+            console.error('Failed to archive completed orders:', error);
+        });
+
+    return orderArchiveMaintenance;
+}
+
+function scheduleOrderArchiveMaintenance() {
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const delay = nextMidnight.getTime() - now.getTime();
+
+    const timer = setTimeout(async () => {
+        await runOrderArchiveMaintenance();
+        scheduleOrderArchiveMaintenance();
+    }, delay);
+
+    timer.unref();
+}
+
+runOrderArchiveMaintenance();
+scheduleOrderArchiveMaintenance();
 
 app.listen(port, () => {
     console.log(`Server Running On Port ${port}!`);
