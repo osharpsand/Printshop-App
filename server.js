@@ -125,6 +125,17 @@ function verifyOrder(order) {
         throw new Error('Name Is Invalid.');
     }
 
+    function verifyItemQuantity(quantity) {
+        if (typeof quantity !== 'number' && typeof quantity !== 'string') {
+            throw new TypeError('Item Quantity Is Invalid.');
+        }
+
+        const numericQuantity = Number(quantity);
+        if (!Number.isInteger(numericQuantity) || numericQuantity < 1 || numericQuantity > 100) {
+            throw new TypeError('Item Quantity Is Invalid.');
+        }
+    }
+
     const existingItems = order.ExistingItems || '';
     const customItems = order.CustomItems || '';
 
@@ -137,6 +148,8 @@ function verifyOrder(order) {
             if (!doesItemExist(existingItem.Name)) {
                 throw new TypeError('Item Does Not Exist.');
             }
+
+            verifyItemQuantity(existingItem.Quantity);
 
             const itemDetails = items[existingItem.Name];
 
@@ -155,6 +168,8 @@ function verifyOrder(order) {
     if (customItems && customItems != '') {
         anyItems = true;
         for (const customItem of customItems) {
+            verifyItemQuantity(customItem.Quantity);
+
             if (!isValidUrl(customItem.Link)) {
                 throw new TypeError('Item Link Is Invalid.');
             }

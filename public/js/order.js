@@ -292,6 +292,13 @@ function showOrderError(message) {
     const errorElement = getElement('orderError');
     errorElement.textContent = message;
     errorElement.style.display = 'block';
+    window.scrollTo(0, 0);
+}
+
+function clearOrderError() {
+    const errorElement = getElement('orderError');
+    errorElement.textContent = '';
+    errorElement.style.display = 'none';
 }
 
 async function updateExistingItemsTotalPrice() {
@@ -375,10 +382,6 @@ function getOrderFormSnapshot() {
     });
 }
 
-function isBlankRow(values, keys) {
-    return keys.every(key => values[key] === '');
-}
-
 function readOrderDetails() {
     const firstName = getElement('firstName').value.trim();
     const lastName = getElement('lastName').value.trim();
@@ -395,7 +398,6 @@ function readOrderDetails() {
             Quantity: '.existing-item-quantity'
         });
 
-        if (isBlankRow(values, ['Name', 'Material', 'Color'])) continue;
         if (!values.Name || !values.Material || !values.Color) {
             throw new Error('Complete or remove each existing print row.');
         }
@@ -417,7 +419,6 @@ function readOrderDetails() {
             Quantity: '.custom-item-quantity'
         });
 
-        if (isBlankRow(values, ['Link', 'Material', 'Color'])) continue;
         if (!values.Link || !values.Material || !values.Color) {
             throw new Error('Complete or remove each custom print row.');
         }
@@ -475,11 +476,13 @@ function setEditing(editing) {
 }
 
 async function saveOrder() {
+    clearOrderError();
+
     let editedDetails;
     try {
         editedDetails = readOrderDetails();
     } catch (error) {
-        alert(error.message);
+        showOrderError(`Unable to save order: ${error.message}`);
         return;
     }
 
@@ -506,9 +509,10 @@ async function saveOrder() {
         hasUnsavedChanges = false;
         existingItemsPriceRequestId++;
         getElement('existingItemsTotalPriceText').textContent = Number(price).toFixed(2);
+        clearOrderError();
         setEditing(false);
     } catch (error) {
-        alert(`Error Saving Order: ${error.message}`);
+        showOrderError(`Error Saving Order: ${error.message}`);
     } finally {
         saveButton.disabled = false;
     }
@@ -622,9 +626,7 @@ async function setup() {
         setEditing(false);
         actionButtons.forEach(button => button.disabled = false);
     } catch (error) {
-        const errorElement = getElement('orderError');
-        errorElement.textContent = `Unable to load order: ${error.message}`;
-        errorElement.style.display = 'block';
+        showOrderError(`Unable to load order: ${error.message}`);
         getElement('orderBackButton').disabled = false;
     }
 }
