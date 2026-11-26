@@ -471,7 +471,7 @@ function setEditing(editing) {
     getElement('orderFinishButton').hidden = editing;
     getElement('orderModeImage').src = `/images/menuIcons/${editing ? 'revert' : 'pencil'}.svg`;
     getElement('orderModeButton').setAttribute('aria-label', editing ? 'Undo edits' : 'Edit order');
-    getElement('orderModeButton').title = editing ? 'Undo edits' : 'Edit order';
+    getElement('orderModeButton').title = editing ? 'Undo' : 'Edit';
 }
 
 async function saveOrder() {

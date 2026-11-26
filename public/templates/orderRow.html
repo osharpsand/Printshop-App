@@ -14,9 +14,9 @@
     <label for="orderPrice-{{ORDER_ID}}" class="order-price-label">Price</label>
     <p id="orderPrice-{{ORDER_ID}}" class="order-price">{{ORDER_PRICE}}</p>
 </div>
-<button id="orderCompleteButton-{{ORDER_ID}}" class="order-complete-button">
+<button id="orderCompleteButton-{{ORDER_ID}}" class="order-complete-button" aria-label="Complete order" title="Complete">
     <img src="/images/menuIcons/check.svg" id="orderCompleteImage-{{ROW_ID}}" class="order-complete-image" alt="Complete Order">
 </button>
-<a href="/pages/order/{{ORDER_ID}}" target="_self" id="orderSelectButton-{{ORDER_ID}}" class="order-select-button">
-    <img src="/images/menuIcons/arrow-right.svg" id="orderSelectImage-{{ROW_ID}}" class="order-select-image" alt="Complete">
+<a href="/pages/order/{{ORDER_ID}}" target="_self" id="orderSelectButton-{{ORDER_ID}}" class="order-select-button" aria-label="View order" title="View">
+    <img src="/images/menuIcons/arrow-right.svg" id="orderSelectImage-{{ROW_ID}}" class="order-select-image" alt="">
 </a>
