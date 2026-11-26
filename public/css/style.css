@@ -692,3 +692,95 @@ footer a:hover {
     max-width: 100%;
     object-fit: contain;
 }
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+    }
+
+    body {
+        background-color: #181818;
+        color: #e0e0e0;
+    }
+
+    .container {
+        background-color: #242424;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+    }
+
+    h1, h2, h3, label {
+        color: #e0e0e0;
+    }
+
+    p, .custom-select__caret, .order-empty-message {
+        color: #b0b0b0;
+    }
+
+    code {
+        background-color: #333;
+        color: #e0e0e0;
+    }
+
+    input, textarea, select, .custom-select__trigger {
+        background-color: #303030;
+        color: #e0e0e0;
+        border-color: #555;
+    }
+
+    input::placeholder, textarea::placeholder {
+        color: #aaa;
+    }
+
+    .custom-select__menu,
+    .custom-select__option {
+        background-color: #303030;
+        color: #e0e0e0;
+        border-color: #555;
+    }
+
+    .custom-select__option:hover,
+    .custom-select__option.is-selected {
+        background-color: #3a493a;
+    }
+
+    .error {
+        background-color: #3b2022;
+        color: #ff8a80;
+    }
+
+    .info {
+        background-color: #1d2c38;
+        color: #bbdefb;
+    }
+
+    .user-info, .existing-item-row, .custom-item-row, .order-row {
+        background-color: #2d2d2d;
+        border-color: #505050;
+    }
+
+    .success, .total-price {
+        background-color: #1e3324;
+        color: #a5d6a7;
+    }
+
+    hr, .order-row-group p {
+        border-color: #505050;
+    }
+
+    .order-row-group p {
+        background-color: #303030;
+        color: #e0e0e0;
+    }
+
+    .existing-item-color-swatch,
+    .existing-item-color-image-wrapper,
+    .custom-item-color-swatch,
+    .custom-item-color-image-wrapper {
+        border-color: #aaa;
+    }
+
+    footer {
+        background-color: #181818;
+        color: #b0b0b0;
+    }
+}
