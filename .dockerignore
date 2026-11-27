@@ -1,11 +1,22 @@
+README.md
+jsconfig.json
+.gitignore
+docker-compose.yaml
+
+!config/
+config/*
+!config/items.json
+!config/materials.json
+
 node_modules
+
 .git
 .vscode
-cert
 
-config
 orders
 sessions
 archive
+cert
+test
 
 change-credentials.js
