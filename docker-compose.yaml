@@ -14,10 +14,18 @@ services:
       - DOMAIN=printshop.example.com
       - ADMIN_USERNAME=admin
       - ADMIN_PASSWORD=admin
-    
-    
+
     volumes:
-      - ./config:/app/config
+      - type: bind
+        source: ./config/.env
+        target: /app/config/.env
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./config/credentials.json
+        target: /app/config/credentials.json
+        bind:
+          create_host_path: false
       - ./orders:/app/orders
       - ./archive:/app/archive
       - ./sessions:/app/sessions
